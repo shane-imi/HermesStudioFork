@@ -4,6 +4,53 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-10 — Session 6
+
+### What was done
+- Completed Task 8: Session Persistence via Redis
+
+**Research findings:**
+- `local-session-store.ts` already existed with correct logic but was dead code — never imported by any API route
+- All session/history routes returned empty data in portable mode (gateway unavailable)
+- `send-stream.ts` streamed messages but never saved them anywhere in portable mode
+- `ioredis` not previously installed; file-based `.runtime/local-sessions.json` approach was designed but inactive
+
+**What was implemented:**
+- `local-session-store.ts` extended with optional Redis backend:
+  - `tryInitRedis()` — non-blocking async init; pings Redis and merges Redis data into in-memory store
+  - `loadFromRedis()` / `saveSessionToRedis()` / `appendMessageToRedis()` / `deleteSessionFromRedis()` helpers
+  - Redis key schema: `hermes:studio:sessions` (hash), `hermes:studio:messages:{id}` (list), 30-day TTL
+  - Graceful fallback: if `REDIS_URL` unset or Redis unreachable, file store used transparently
+- `/api/sessions` — all 4 verbs wired to local store when gateway unavailable:
+  - GET: returns `listLocalSessions()` with session metadata
+  - POST: calls `ensureLocalSession(friendlyId, model)` — persisted immediately
+  - PATCH: calls `updateLocalSessionTitle(sessionKey, label)` — persistent rename
+  - DELETE: calls `deleteLocalSession(sessionKey)` — removes from file + Redis
+- `/api/history` — when gateway unavailable: resolves session key (explicit → latest → 'new'), returns `getLocalMessages().map(toLocalChatMessage)`
+- `send-stream.ts` — portable mode now saves messages:
+  - Before stream: `ensureLocalSession(key)` + `appendLocalMessage({ role: 'user', ... })`
+  - After stream: `appendLocalMessage({ role: 'assistant', content: accumulated })`
+- `ioredis` added as runtime dependency via `pnpm add ioredis`
+- `.env.example` updated with `REDIS_URL=redis://localhost:6379` comment block
+
+**Tests passed (standalone Node.js test script):**
+- Session create + file written ✅
+- Reload from disk after memory clear (server restart simulation) ✅
+- Messages preserved across reload ✅
+- Delete session ✅
+- 500-message cap enforcement ✅
+- TypeScript: zero errors ✅
+- Build: clean ✅
+
+### Repo state
+- Branch: `dev` → merged to `main`
+- Version: 1.5.0
+
+### Next session start
+- Task 9: Multi-Agent Orchestration Dashboard
+
+---
+
 ## 2026-04-10 — Session 5
 
 ### What was done

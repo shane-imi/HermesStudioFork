@@ -6,7 +6,7 @@
 
 **The most complete web UI for Hermes Agent — chat, memory, skills, terminal, approvals, and multi-agent orchestration in one place.**
 
-[![Version](https://img.shields.io/badge/version-1.4.0-6366F1.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-6366F1.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-6366F1.svg)](CONTRIBUTING.md)
@@ -23,7 +23,7 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 - ✅ **Skill Installation** — install, uninstall, and toggle skills from the registry directly in the browser; clawhub fallback with inline instructions
 - ✅ **Cron Job Manager** — full create/edit/delete/pause/resume/trigger UI for scheduled Hermes tasks; run history with output preview
 - ✅ **Permissions & Toolsets** — configure approvals mode, toolsets, security scanner, code execution limits, and reasoning effort from Settings
-- 🔜 **Session Persistence** — Redis-backed sessions that survive restarts
+- ✅ **Session Persistence** — chat history survives server restarts in portable mode; optional Redis backend for multi-device sync
 - 🔜 **Multi-Agent Orchestration** — crew status dashboard for coordinating multiple agents
 
 </div>
@@ -42,6 +42,7 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 - 📦 **Skill Installation** — Install/uninstall/toggle skills directly from the browser
 - ⏰ **Job Scheduler** — Create, edit, pause, trigger, and monitor scheduled Hermes tasks
 - 🔐 **Permissions & Toolsets** — Configure approvals, toolsets, security scanner, code limits, and reasoning from Settings UI
+- 💾 **Session Persistence** — Chat history survives server restarts; optional Redis backend for multi-device sync (`REDIS_URL`)
 
 ---
 
@@ -498,7 +499,7 @@ The Docker setup uses `hermes --gateway` automatically — no action needed if u
 | Skill Install / Toggle UI       | ✅ Shipped v1.2.0 |
 | Cron Job Manager UI             | ✅ Shipped v1.3.0 |
 | Permissions & Toolsets Settings | ✅ Shipped v1.4.0 |
-| Session Persistence (Redis)     | 🔜 Planned        |
+| Session Persistence (Redis)     | ✅ Shipped v1.5.0 |
 | Multi-Agent Orchestration       | 🔜 Planned        |
 | Native Desktop App (Electron)   | 🔨 In Development |
 | Cloud / Hosted Version          | 🔜 Coming Soon    |

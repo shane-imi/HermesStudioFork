@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.5.0] — 2026-04-10
+
+### Added
+- **Session Persistence** (Task 8) — chat history survives server restarts in portable mode
+  - `local-session-store.ts` now fully wired: all four `/api/sessions` verbs (GET/POST/PATCH/DELETE) and `/api/history` route use the local store when the Hermes gateway is unavailable
+  - `send-stream.ts` saves user and assistant messages to the local store on every exchange in portable mode
+  - Optional **Redis backend** activated by setting `REDIS_URL` env var — falls back to file store gracefully if Redis is unreachable
+  - Redis key schema: `hermes:studio:sessions` (hash) and `hermes:studio:messages:{id}` (list), both with 30-day TTL
+  - In-memory store with 2-second debounced file writes to `.runtime/local-sessions.json`
+  - 500-message cap per session enforced on both file and Redis backends
+  - `ioredis` added as optional dependency; lazy-loaded only when `REDIS_URL` is set
+  - `.env.example` updated with `REDIS_URL` documentation
+
+---
+
 ## [1.4.0] — 2026-04-10
 
 ### Added

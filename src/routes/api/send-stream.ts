@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { createFileRoute } from '@tanstack/react-router'
 import { resolveSessionKey } from '../../server/session-utils'
 import { isAuthenticated } from '../../server/auth-middleware'
@@ -9,8 +10,6 @@ import {
 } from '../../server/send-run-tracker'
 import { getChatMode } from '../../server/gateway-capabilities'
 import {
-  
-  
   openaiChat
 } from '../../server/openai-compat-api'
 import {
@@ -20,6 +19,10 @@ import {
   getGatewayCapabilities,
   streamChat,
 } from '../../server/hermes-api'
+import {
+  appendLocalMessage,
+  ensureLocalSession,
+} from '../../server/local-session-store'
 import type {OpenAICompatContentPart, OpenAICompatMessage} from '../../server/openai-compat-api';
 // Hermes agent runs can take 5+ minutes with complex tool chains
 const SEND_STREAM_RUN_TIMEOUT_MS = 600_000
@@ -402,6 +405,15 @@ export const Route = createFileRoute('/api/send-stream')({
                   friendlyId: portableFriendlyId,
                 })
 
+                // Persist user message to local store (portable mode)
+                ensureLocalSession(portableSessionKey)
+                appendLocalMessage(portableSessionKey, {
+                  id: randomUUID(),
+                  role: 'user',
+                  content: message,
+                  timestamp: Date.now(),
+                })
+
                 try {
                   const userContent = buildMultimodalContent(
                     message,
@@ -444,6 +456,16 @@ export const Route = createFileRoute('/api/send-stream')({
                         runId,
                       })
                     }
+                  }
+
+                  // Persist assistant response to local store (portable mode)
+                  if (accumulated) {
+                    appendLocalMessage(portableSessionKey, {
+                      id: randomUUID(),
+                      role: 'assistant',
+                      content: accumulated,
+                      timestamp: Date.now(),
+                    })
                   }
 
                   sendEvent('done', {

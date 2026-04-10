@@ -5,6 +5,9 @@ const DATA_DIR = join(process.cwd(), '.runtime')
 const SESSIONS_FILE = join(DATA_DIR, 'local-sessions.json')
 const MAX_MESSAGES_PER_SESSION = 500
 
+// Redis key prefix
+const REDIS_PREFIX = 'hermes:studio'
+
 export type LocalSession = {
   id: string
   title: string | null
@@ -29,7 +32,11 @@ type StoreData = {
   messages: Record<string, Array<LocalMessage>>
 }
 
+// ─── In-memory cache ────────────────────────────────────────────────────────
+
 let store: StoreData = { sessions: {}, messages: {} }
+
+// ─── File-based persistence ─────────────────────────────────────────────────
 
 function loadFromDisk(): void {
   try {
@@ -54,7 +61,130 @@ function saveToDisk(): void {
   }
 }
 
+// ─── Redis backend (optional) ────────────────────────────────────────────────
+// Activated when REDIS_URL env var is set. Falls back to file store silently.
+
+let redis: import('ioredis').Redis | null = null
+
+async function loadFromRedis(client: import('ioredis').Redis): Promise<void> {
+  try {
+    const sessionKeys = await client.hkeys(`${REDIS_PREFIX}:sessions`)
+    const sessions: Record<string, LocalSession> = {}
+    const messages: Record<string, Array<LocalMessage>> = {}
+
+    for (const sid of sessionKeys) {
+      const raw = await client.hget(`${REDIS_PREFIX}:sessions`, sid)
+      if (raw) {
+        try {
+          sessions[sid] = JSON.parse(raw) as LocalSession
+        } catch {
+          // skip corrupt entry
+        }
+      }
+      const msgs = await client.lrange(`${REDIS_PREFIX}:messages:${sid}`, 0, -1)
+      messages[sid] = msgs.flatMap((m) => {
+        try {
+          return [JSON.parse(m) as LocalMessage]
+        } catch {
+          return []
+        }
+      })
+    }
+
+    // Merge: prefer Redis data (more recent) over file data
+    store = {
+      sessions: { ...store.sessions, ...sessions },
+      messages: { ...store.messages, ...messages },
+    }
+  } catch {
+    // Redis load failed — stick with file data
+  }
+}
+
+async function saveSessionToRedis(
+  client: import('ioredis').Redis,
+  session: LocalSession,
+): Promise<void> {
+  try {
+    await client.hset(
+      `${REDIS_PREFIX}:sessions`,
+      session.id,
+      JSON.stringify(session),
+    )
+    // 30-day TTL on the sessions hash key
+    await client.expire(`${REDIS_PREFIX}:sessions`, 60 * 60 * 24 * 30)
+  } catch {
+    // ignore Redis write failures
+  }
+}
+
+async function appendMessageToRedis(
+  client: import('ioredis').Redis,
+  sessionId: string,
+  message: LocalMessage,
+): Promise<void> {
+  try {
+    const key = `${REDIS_PREFIX}:messages:${sessionId}`
+    await client.rpush(key, JSON.stringify(message))
+    await client.ltrim(key, -MAX_MESSAGES_PER_SESSION, -1)
+    await client.expire(key, 60 * 60 * 24 * 30)
+  } catch {
+    // ignore Redis write failures
+  }
+}
+
+async function deleteSessionFromRedis(
+  client: import('ioredis').Redis,
+  sessionId: string,
+): Promise<void> {
+  try {
+    await client.hdel(`${REDIS_PREFIX}:sessions`, sessionId)
+    await client.del(`${REDIS_PREFIX}:messages:${sessionId}`)
+  } catch {
+    // ignore
+  }
+}
+
+async function tryInitRedis(): Promise<void> {
+  const url = process.env.REDIS_URL
+  if (!url) return
+  try {
+    const { default: Redis } = await import('ioredis')
+    const client = new Redis(url, {
+      lazyConnect: true,
+      connectTimeout: 3000,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+    })
+    await client.connect()
+    await client.ping()
+    redis = client
+    await loadFromRedis(client)
+    console.log('[session-store] Redis connected — using Redis backend')
+  } catch (err) {
+    redis = null
+    const msg = err instanceof Error ? err.message : String(err)
+    console.log(`[session-store] Redis unavailable (${msg}), using file store`)
+  }
+}
+
+// Bootstrap: load from file immediately, then try Redis upgrade in background
 loadFromDisk()
+void tryInitRedis()
+
+// ─── Deferred write scheduler ───────────────────────────────────────────────
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleSave(): void {
+  if (saveTimer) return
+  saveTimer = setTimeout(() => {
+    saveTimer = null
+    saveToDisk()
+  }, 2000)
+}
+
+// ─── Public API ─────────────────────────────────────────────────────────────
 
 export function listLocalSessions(): Array<LocalSession> {
   return Object.values(store.sessions).sort((a, b) => b.updatedAt - a.updatedAt)
@@ -79,6 +209,7 @@ export function ensureLocalSession(
     }
     store.messages[sessionId] = []
     saveToDisk()
+    if (redis) void saveSessionToRedis(redis, store.sessions[sessionId])
   }
   return store.sessions[sessionId]
 }
@@ -92,6 +223,7 @@ export function updateLocalSessionTitle(
     session.title = title
     session.updatedAt = Date.now()
     saveToDisk()
+    if (redis) void saveSessionToRedis(redis, session)
   }
 }
 
@@ -104,6 +236,7 @@ export function deleteLocalSession(sessionId: string): void {
   delete store.sessions[sessionId]
   delete store.messages[sessionId]
   saveToDisk()
+  if (redis) void deleteSessionFromRedis(redis, sessionId)
 }
 
 export function getLocalMessages(sessionId: string): Array<LocalMessage> {
@@ -128,13 +261,62 @@ export function appendLocalMessage(
     session.updatedAt = Date.now()
   }
   scheduleSave()
+  if (redis) void appendMessageToRedis(redis, sessionId, message)
 }
 
-let saveTimer: ReturnType<typeof setTimeout> | null = null
-function scheduleSave(): void {
-  if (saveTimer) return
-  saveTimer = setTimeout(() => {
-    saveTimer = null
-    saveToDisk()
-  }, 2000)
+// ─── Client-format adapters ──────────────────────────────────────────────────
+
+/** Convert a LocalSession → the session summary format the frontend expects */
+export function toLocalSessionSummary(
+  session: LocalSession,
+): Record<string, unknown> {
+  return {
+    key: session.id,
+    friendlyId: session.id,
+    kind: 'chat',
+    status: 'idle',
+    model: session.model || '',
+    label: session.title || session.id,
+    title: session.title || session.id,
+    derivedTitle: session.title || session.id,
+    tokenCount: 0,
+    totalTokens: 0,
+    message_count: session.messageCount,
+    messageCount: session.messageCount,
+    createdAt: new Date(session.createdAt).toISOString(),
+    updatedAt: new Date(session.updatedAt).toISOString(),
+    source: 'local',
+  }
+}
+
+/** Convert a LocalMessage → the ChatMessage format the frontend expects */
+export function toLocalChatMessage(
+  msg: LocalMessage,
+  index: number,
+): Record<string, unknown> {
+  const content: Array<Record<string, unknown>> = []
+
+  if (msg.role === 'tool') {
+    content.push({
+      type: 'tool_result',
+      toolCallId: msg.toolCallId,
+      toolName: msg.toolName,
+      text: msg.content || '',
+    })
+  } else {
+    if (msg.content) {
+      content.push({ type: 'text', text: msg.content })
+    }
+  }
+
+  return {
+    id: `local-${msg.id}`,
+    role: msg.role,
+    content,
+    text: msg.content || '',
+    timestamp: msg.timestamp,
+    createdAt: new Date(msg.timestamp).toISOString(),
+    __historyIndex: index,
+    source: 'local',
+  }
 }

@@ -13,6 +13,13 @@ import {
   toSessionSummary,
   updateSession,
 } from '../../server/hermes-api'
+import {
+  deleteLocalSession,
+  ensureLocalSession,
+  listLocalSessions,
+  toLocalSessionSummary,
+  updateLocalSessionTitle,
+} from '../../server/local-session-store'
 import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
 
 export const Route = createFileRoute('/api/sessions')({
@@ -25,11 +32,11 @@ export const Route = createFileRoute('/api/sessions')({
         }
         await ensureGatewayProbed()
         if (!getGatewayCapabilities().sessions) {
+          const localSessions = listLocalSessions()
           return json({
             ok: true,
-            sessions: [],
-            source: 'unavailable',
-            message: SESSIONS_API_UNAVAILABLE_MESSAGE,
+            sessions: localSessions.map(toLocalSessionSummary),
+            source: 'local',
           })
         }
 
@@ -53,13 +60,23 @@ export const Route = createFileRoute('/api/sessions')({
         if (csrfCheckPost) return csrfCheckPost
         await ensureGatewayProbed()
         if (!getGatewayCapabilities().sessions) {
-          const friendlyId = randomUUID()
+          const body2 = (await request.json().catch(() => ({}))) as Record<
+            string,
+            unknown
+          >
+          const requestedId =
+            typeof body2.friendlyId === 'string' ? body2.friendlyId.trim() : ''
+          const model =
+            typeof body2.model === 'string' ? body2.model.trim() : undefined
+          const friendlyId = requestedId || randomUUID()
+          const session = ensureLocalSession(friendlyId, model)
           return json({
-            ...createCapabilityUnavailablePayload('sessions'),
             ok: true,
-            sessionKey: friendlyId,
-            friendlyId,
-            persisted: false,
+            sessionKey: session.id,
+            friendlyId: session.id,
+            entry: toLocalSessionSummary(session),
+            persisted: true,
+            source: 'local',
           })
         }
         try {
@@ -118,14 +135,18 @@ export const Route = createFileRoute('/api/sessions')({
             typeof body.sessionKey === 'string' ? body.sessionKey.trim() : ''
           const rawFriendlyId =
             typeof body.friendlyId === 'string' ? body.friendlyId.trim() : ''
-          const sessionKey = rawSessionKey || rawFriendlyId || randomUUID()
-
+          const sessionKey = rawSessionKey || rawFriendlyId
+          const label =
+            typeof body.label === 'string' ? body.label.trim() : undefined
+          if (sessionKey && label) {
+            updateLocalSessionTitle(sessionKey, label)
+          }
           return json({
-            ...createCapabilityUnavailablePayload('sessions'),
             ok: true,
-            sessionKey,
+            sessionKey: sessionKey || rawFriendlyId,
             friendlyId: rawFriendlyId || sessionKey,
-            updated: false,
+            updated: !!label,
+            source: 'local',
           })
         }
         try {
@@ -178,12 +199,12 @@ export const Route = createFileRoute('/api/sessions')({
           const rawSessionKey = url.searchParams.get('sessionKey') ?? ''
           const rawFriendlyId = url.searchParams.get('friendlyId') ?? ''
           const sessionKey = rawSessionKey.trim() || rawFriendlyId.trim()
-
+          if (sessionKey) deleteLocalSession(sessionKey)
           return json({
-            ...createCapabilityUnavailablePayload('sessions'),
             ok: true,
             sessionKey,
-            deleted: false,
+            deleted: !!sessionKey,
+            source: 'local',
           })
         }
         try {

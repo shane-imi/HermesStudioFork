@@ -1,13 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import {
-  SESSIONS_API_UNAVAILABLE_MESSAGE,
   ensureGatewayProbed,
   getGatewayCapabilities,
   getMessages,
   listSessions,
   toChatMessage,
 } from '../../server/hermes-api'
+import {
+  getLocalMessages,
+  listLocalSessions,
+  toLocalChatMessage,
+} from '../../server/local-session-store'
 import { resolveSessionKey } from '../../server/session-utils'
 import { isAuthenticated } from '@/server/auth-middleware'
 
@@ -20,12 +24,26 @@ export const Route = createFileRoute('/api/history')({
         }
         await ensureGatewayProbed()
         if (!getGatewayCapabilities().sessions) {
+          const url2 = new URL(request.url)
+          const rawKey = url2.searchParams.get('sessionKey')?.trim()
+          const fid = url2.searchParams.get('friendlyId')?.trim()
+          // Resolve: prefer explicit key; fallback to most recent local session
+          let localKey = rawKey || fid || ''
+          if (!localKey || localKey === 'main' || localKey === 'new') {
+            const sessions = listLocalSessions()
+            localKey = sessions[0]?.id ?? 'new'
+          }
+          if (localKey === 'new') {
+            return json({ sessionKey: 'new', sessionId: 'new', messages: [], source: 'local' })
+          }
+          const limit2 = Number(url2.searchParams.get('limit') || '200')
+          const msgs = getLocalMessages(localKey)
+          const bounded = limit2 > 0 ? msgs.slice(-limit2) : msgs
           return json({
-            sessionKey: 'new',
-            sessionId: 'new',
-            messages: [],
-            source: 'unavailable',
-            message: SESSIONS_API_UNAVAILABLE_MESSAGE,
+            sessionKey: localKey,
+            sessionId: localKey,
+            messages: bounded.map((m, i) => toLocalChatMessage(m, i)),
+            source: 'local',
           })
         }
         try {
