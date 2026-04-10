@@ -483,11 +483,11 @@ The Docker setup uses `hermes --gateway` automatically — no action needed if u
 
 ## 💛 Support the Project
 
-Hermes Workspace is free and open source. If it's saving you time and powering your workflow, consider supporting development:
+Hermes Studio is free and open source. If it's saving you time and powering your workflow, consider supporting development:
 
-**ETH:** `0xB332D4C60f6FBd94913e3Fd40d77e3FE901FAe22`
+**ETH:** `0xdfa8ac0f37d1129af72d0c4c6c0dff22e7a816b7`
 
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/outsourc-e)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/JPeetz)
 
 Every contribution helps keep this project moving. Thank you 🙏
 
