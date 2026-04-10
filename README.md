@@ -81,7 +81,7 @@ Point Hermes Studio at any backend that supports:
 Example Hermes gateway setup:
 
 ```bash
-git clone https://github.com/outsourc-e/hermes-agent.git
+git clone https://github.com/NousResearch/hermes-agent.git
 cd hermes-agent
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -397,10 +397,10 @@ The workspace auto-detects your gateway's capabilities on startup. Check your te
 [gateway] Missing Hermes APIs detected. Update Hermes: cd hermes-agent && git pull && pip install -e . && hermes --gateway
 ```
 
-**Fix:** Use our fork which includes extended gateway endpoints:
+**Fix:** Make sure you have the latest Hermes Agent with extended gateway support:
 
 ```bash
-git clone https://github.com/outsourc-e/hermes-agent.git
+git clone https://github.com/NousResearch/hermes-agent.git
 cd hermes-agent && pip install -e . && hermes --gateway
 ```
 
@@ -430,7 +430,7 @@ Verify: `curl http://localhost:8642/health` should return `{"status": "ok"}`.
 
 ### "Using upstream NousResearch/hermes-agent"
 
-The upstream hermes-agent supports basic chat via `hermes --gateway`, but doesn't include extended endpoints (sessions, memory, skills, config) yet. The workspace will work in **portable mode** with basic chat. For full features, use our fork (`outsourc-e/hermes-agent`).
+The upstream hermes-agent supports basic chat via `hermes --gateway`, but older versions may not include extended endpoints (sessions, memory, skills, config). Hermes Studio will work in **portable mode** with basic chat. For full features, ensure you have the latest version: `cd hermes-agent && git pull && pip install -e .`
 
 ### Docker: "Unauthorized" or "Connection refused" to hermes-agent
 
