@@ -77,6 +77,8 @@ import { Route as ApiHermesProxySplatRouteImport } from './routes/api/hermes-pro
 import { Route as ApiHermesJobsJobIdRouteImport } from './routes/api/hermes-jobs.$jobId'
 import { Route as ApiSessionsSessionKeyStatusRouteImport } from './routes/api/sessions/$sessionKey.status'
 import { Route as ApiSessionsSessionKeyActiveRunRouteImport } from './routes/api/sessions/$sessionKey.active-run'
+import { Route as ApiApprovalsApprovalIdDenyRouteImport } from './routes/api/approvals.$approvalId.deny'
+import { Route as ApiApprovalsApprovalIdApproveRouteImport } from './routes/api/approvals.$approvalId.approve'
 
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
@@ -420,6 +422,18 @@ const ApiSessionsSessionKeyActiveRunRoute =
     path: '/$sessionKey/active-run',
     getParentRoute: () => ApiSessionsRoute,
   } as any)
+const ApiApprovalsApprovalIdDenyRoute =
+  ApiApprovalsApprovalIdDenyRouteImport.update({
+    id: '/api/approvals/$approvalId/deny',
+    path: '/api/approvals/$approvalId/deny',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiApprovalsApprovalIdApproveRoute =
+  ApiApprovalsApprovalIdApproveRouteImport.update({
+    id: '/api/approvals/$approvalId/approve',
+    path: '/api/approvals/$approvalId/approve',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -488,6 +502,8 @@ export interface FileRoutesByFullPath {
   '/api/skills/hub-search': typeof ApiSkillsHubSearchRoute
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
+  '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -557,6 +573,8 @@ export interface FileRoutesByTo {
   '/api/skills/hub-search': typeof ApiSkillsHubSearchRoute
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
+  '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -628,6 +646,8 @@ export interface FileRoutesById {
   '/api/skills/hub-search': typeof ApiSkillsHubSearchRoute
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
+  '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -700,6 +720,8 @@ export interface FileRouteTypes {
     | '/api/skills/hub-search'
     | '/api/skills/install'
     | '/api/skills/uninstall'
+    | '/api/approvals/$approvalId/approve'
+    | '/api/approvals/$approvalId/deny'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   fileRoutesByTo: FileRoutesByTo
@@ -769,6 +791,8 @@ export interface FileRouteTypes {
     | '/api/skills/hub-search'
     | '/api/skills/install'
     | '/api/skills/uninstall'
+    | '/api/approvals/$approvalId/approve'
+    | '/api/approvals/$approvalId/deny'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   id:
@@ -839,6 +863,8 @@ export interface FileRouteTypes {
     | '/api/skills/hub-search'
     | '/api/skills/install'
     | '/api/skills/uninstall'
+    | '/api/approvals/$approvalId/approve'
+    | '/api/approvals/$approvalId/deny'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   fileRoutesById: FileRoutesById
@@ -898,6 +924,8 @@ export interface RootRouteChildren {
   ApiProfilesListRoute: typeof ApiProfilesListRoute
   ApiProfilesReadRoute: typeof ApiProfilesReadRoute
   ApiProfilesRenameRoute: typeof ApiProfilesRenameRoute
+  ApiApprovalsApprovalIdApproveRoute: typeof ApiApprovalsApprovalIdApproveRoute
+  ApiApprovalsApprovalIdDenyRoute: typeof ApiApprovalsApprovalIdDenyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1378,6 +1406,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionKeyActiveRunRouteImport
       parentRoute: typeof ApiSessionsRoute
     }
+    '/api/approvals/$approvalId/deny': {
+      id: '/api/approvals/$approvalId/deny'
+      path: '/api/approvals/$approvalId/deny'
+      fullPath: '/api/approvals/$approvalId/deny'
+      preLoaderRoute: typeof ApiApprovalsApprovalIdDenyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/approvals/$approvalId/approve': {
+      id: '/api/approvals/$approvalId/approve'
+      path: '/api/approvals/$approvalId/approve'
+      fullPath: '/api/approvals/$approvalId/approve'
+      preLoaderRoute: typeof ApiApprovalsApprovalIdApproveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1514,6 +1556,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProfilesListRoute: ApiProfilesListRoute,
   ApiProfilesReadRoute: ApiProfilesReadRoute,
   ApiProfilesRenameRoute: ApiProfilesRenameRoute,
+  ApiApprovalsApprovalIdApproveRoute: ApiApprovalsApprovalIdApproveRoute,
+  ApiApprovalsApprovalIdDenyRoute: ApiApprovalsApprovalIdDenyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

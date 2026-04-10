@@ -762,6 +762,46 @@ export const Route = createFileRoute('/api/send-stream')({
                       return
                     }
 
+                    // Dangerous-command approval request from the gateway.
+                    // The agent thread is BLOCKED until the user responds.
+                    // Forward the event to the client so the approval UI can render.
+                    if (
+                      event === 'approval.required' ||
+                      event === 'tool.approval' ||
+                      event === 'exec.approval'
+                    ) {
+                      const approvalId =
+                        readString(data.approval_id) ||
+                        readString(data.approvalId) ||
+                        readString(data.id)
+                      const translated = {
+                        approvalId: approvalId || undefined,
+                        id: approvalId || undefined,
+                        action:
+                          readString(data.command) ||
+                          readString(data.action) ||
+                          readString(data.tool) ||
+                          'Dangerous command requires approval',
+                        context:
+                          readString(data.description) ||
+                          readString(data.context) ||
+                          readString(data.input) ||
+                          '',
+                        agentName: readString(data.agent_name) || 'Agent',
+                        agentId:
+                          readString(data.agent_id) ||
+                          sessionKeyFromEvent ||
+                          'hermes',
+                        sessionKey: sessionKeyFromEvent,
+                        source: 'hermes',
+                        runId,
+                      }
+                      sendEvent('approval', translated)
+                      skipPublish ||
+                        publishChatEvent('approval', translated)
+                      return
+                    }
+
                     if (event === 'error') {
                       const errorMessage =
                         readString(

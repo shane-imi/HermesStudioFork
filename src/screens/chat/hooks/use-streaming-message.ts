@@ -47,6 +47,7 @@ type UseStreamingMessageOptions = {
   onError?: (error: string) => void
   onThinking?: (thinking: string) => void
   onTool?: (tool: unknown) => void
+  onApprovalRequest?: (approval: Record<string, unknown>) => void
   onMessageAccepted?: (
     sessionKey: string,
     friendlyId: string,
@@ -66,6 +67,7 @@ export function useStreamingMessage(options: UseStreamingMessageOptions = {}) {
     onError,
     onThinking,
     onTool,
+    onApprovalRequest,
     onMessageAccepted,
     onSessionResolved,
   } = options
@@ -505,6 +507,10 @@ export function useStreamingMessage(options: UseStreamingMessageOptions = {}) {
           onTool?.(payload)
           break
         }
+        case 'approval': {
+          onApprovalRequest?.(payload)
+          break
+        }
         case 'step': {
           const nextUsage: StepUsagePayload = {
             inputTokens:
@@ -612,6 +618,7 @@ export function useStreamingMessage(options: UseStreamingMessageOptions = {}) {
     [
       finishStream,
       markFailed,
+      onApprovalRequest,
       onStarted,
       onSessionResolved,
       onThinking,

@@ -551,6 +551,41 @@ export function ChatScreen({
     portableMode: isPortableMode,
   })
 
+  // Approval request handler — shared between realtime stream and send-stream
+  const handleApprovalRequest = useCallback(
+    (payload: Record<string, unknown>) => {
+      const approvalId =
+        typeof payload.id === 'string'
+          ? payload.id
+          : typeof payload.approvalId === 'string'
+            ? payload.approvalId
+            : ''
+
+      const currentApprovals = loadApprovals()
+      if (
+        approvalId &&
+        currentApprovals.some((entry) => {
+          return entry.status === 'pending' && entry.approvalId === approvalId
+        })
+      ) {
+        setPendingApprovals(
+          currentApprovals.filter((entry) => entry.status === 'pending'),
+        )
+        return
+      }
+
+      addApproval({
+        ...payload,
+        approvalId: approvalId || undefined,
+        source: 'hermes',
+      })
+      setPendingApprovals(
+        loadApprovals().filter((entry) => entry.status === 'pending'),
+      )
+    },
+    [],
+  )
+
   // Wire SSE realtime stream for instant message delivery
   const {
     messages: realtimeMessages,
@@ -587,68 +622,7 @@ export function ChatScreen({
       setWaitingForResponse(true)
       setPendingGeneration(true)
     }, []),
-    onApprovalRequest: useCallback((payload: Record<string, unknown>) => {
-      const approvalId =
-        typeof payload.id === 'string'
-          ? payload.id
-          : typeof payload.approvalId === 'string'
-            ? payload.approvalId
-            : typeof payload.approvalId === 'string'
-              ? payload.approvalId
-              : ''
-
-      const currentApprovals = loadApprovals()
-      if (
-        approvalId &&
-        currentApprovals.some((entry) => {
-          return entry.status === 'pending' && entry.approvalId === approvalId
-        })
-      ) {
-        setPendingApprovals(
-          currentApprovals.filter((entry) => entry.status === 'pending'),
-        )
-        return
-      }
-
-      const actionValue = payload.action ?? payload.tool ?? payload.command
-      const action =
-        typeof actionValue === 'string'
-          ? actionValue
-          : actionValue
-            ? JSON.stringify(actionValue)
-            : 'Tool call requires approval'
-      const contextValue = payload.context ?? payload.input ?? payload.args
-      const context =
-        typeof contextValue === 'string'
-          ? contextValue
-          : contextValue
-            ? JSON.stringify(contextValue)
-            : ''
-      const agentNameValue =
-        payload.agentName ?? payload.agent ?? payload.source
-      const agentName =
-        typeof agentNameValue === 'string' && agentNameValue.trim().length > 0
-          ? agentNameValue
-          : 'Agent'
-      const agentIdValue =
-        payload.agentId ?? payload.sessionKey ?? payload.source
-      const agentId =
-        typeof agentIdValue === 'string' && agentIdValue.trim().length > 0
-          ? agentIdValue
-          : 'hermes'
-
-      addApproval({
-        agentId,
-        agentName,
-        action,
-        context,
-        source: 'hermes',
-        approvalId: approvalId || undefined,
-      })
-      setPendingApprovals(
-        loadApprovals().filter((entry) => entry.status === 'pending'),
-      )
-    }, []),
+    onApprovalRequest: handleApprovalRequest,
     onCompactionStart: useCallback(() => {
       setIsCompacting(true)
     }, []),
@@ -717,7 +691,11 @@ export function ChatScreen({
   }, [])
 
   const resolvePendingApproval = useCallback(
-    async (approval: ApprovalRequest, status: 'approved' | 'denied') => {
+    async (
+      approval: ApprovalRequest,
+      status: 'approved' | 'denied' | 'always-allowed',
+      scope?: 'once' | 'session' | 'always',
+    ) => {
       const nextApprovals = loadApprovals().map((entry) => {
         if (entry.id !== approval.id) return entry
         return {
@@ -732,12 +710,17 @@ export function ChatScreen({
       )
       if (!approval.approvalId) return
 
-      const endpoint =
-        status === 'approved'
-          ? `/api/approvals/${approval.approvalId}/approve`
-          : `/api/approvals/${approval.approvalId}/deny`
+      const isDeny = status === 'denied'
+      const endpoint = isDeny
+        ? `/api/approvals/${approval.approvalId}/deny`
+        : `/api/approvals/${approval.approvalId}/approve`
+      const resolvedScope = status === 'always-allowed' ? 'always' : (scope ?? 'once')
       try {
-        await fetch(endpoint, { method: 'POST' })
+        await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: isDeny ? '{}' : JSON.stringify({ scope: resolvedScope }),
+        })
       } catch {
         // Local resolution still succeeds when API endpoint is unavailable.
       }
@@ -1074,6 +1057,7 @@ export function ChatScreen({
       },
       [queryClient],
     ),
+    onApprovalRequest: handleApprovalRequest,
   })
 
   const activeIsRealtimeStreaming = isPortableMode
@@ -2519,11 +2503,20 @@ export function ChatScreen({
                       <button
                         type="button"
                         onClick={() => {
-                          void resolvePendingApproval(approval, 'approved')
+                          void resolvePendingApproval(approval, 'approved', 'once')
                         }}
                         className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
                       >
                         Approve
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void resolvePendingApproval(approval, 'always-allowed', 'always')
+                        }}
+                        className="rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-600"
+                      >
+                        Always Allow
                       </button>
                       <button
                         type="button"
