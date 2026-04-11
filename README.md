@@ -13,8 +13,6 @@
 
 > Not a chat wrapper. A complete studio — orchestrate agents, approve actions, browse memory, manage skills, and control everything from one interface. Built for power users running Hermes Agent locally.
 
-![Hermes Studio](./docs/screenshots/splash.png)
-
 ### What's different from hermes-workspace
 
 Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/hermes-workspace) extended with:
