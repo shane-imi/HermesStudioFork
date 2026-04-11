@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/hermes-avatar.webp" alt="Hermes Studio" width="80" style="border-radius: 16px" />
+<img width="1520" height="648" alt="Gemini_Generated_Image_rlo1qerlo1qerlo1-ezremove" src="https://github.com/user-attachments/assets/7eab7817-b21d-4595-9412-ac013761dcd5" />
 
 # Hermes Studio
 
