@@ -134,7 +134,7 @@ export function SkillsScreen() {
   const [actionType, setActionType] = useState<'install' | 'uninstall' | 'toggle' | null>(null)
   const [selectedSkill, setSelectedSkill] = useState<SkillSummary | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
-  const [clawhubHint, setClawhubHint] = useState<string | null>(null)
+  // clawhubHint removed — not applicable in Hermes Studio local deployment
 
   useEffect(() => {
     if (tab !== 'marketplace') return
@@ -326,13 +326,11 @@ export function SkillsScreen() {
         ok?: boolean
       }
 
-      // clawhub not installed — show persistent hint instead of a toast
       if (!response.ok && data.installClawhub) {
-        setClawhubHint(data.installClawhub)
         if (data.command) {
           await copyCommandAndToast(
             data.command,
-            data.error || 'clawhub not installed.',
+            data.error || 'Manual install required.',
           )
         }
         return
@@ -504,26 +502,6 @@ export function SkillsScreen() {
               ) : null}
             </div>
 
-            {clawhubHint ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800/50 dark:bg-amber-900/15">
-                <p className="font-medium text-amber-700 dark:text-amber-400">
-                  clawhub CLI not installed
-                </p>
-                <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-500">
-                  Install it to enable one-click skill installation from the browser:
-                </p>
-                <code className="mt-1 block rounded bg-amber-100 px-2 py-1 font-mono text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                  {clawhubHint}
-                </code>
-                <button
-                  type="button"
-                  className="mt-1 text-xs text-amber-600 underline hover:text-amber-800 dark:text-amber-400"
-                  onClick={() => setClawhubHint(null)}
-                >
-                  Dismiss
-                </button>
-              </div>
-            ) : null}
             {actionError ? (
               <p className="rounded-lg border border-primary-200 bg-primary-100/60 px-3 py-2 text-sm text-ink">
                 {actionError}
@@ -557,11 +535,11 @@ export function SkillsScreen() {
                 <input
                   value={searchInput}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Search Skills Hub, GitHub, and local fallback"
+                  placeholder="Search skills..."
                   className="h-10 w-full rounded-lg border border-primary-200 bg-primary-100/60 px-3 text-sm text-ink outline-none transition-colors focus:border-primary"
                 />
                 <div className="text-xs text-primary-500 sm:text-right">
-                  Source: {hubQuery.data?.source || 'hub'}
+                  {hubQuery.data?.source === 'installed-fallback' ? 'Source: local ~/.hermes/skills' : hubQuery.data?.source === 'clawhub' ? 'Source: Skills Hub' : 'Source: local'}
                 </div>
               </div>
 
@@ -570,20 +548,6 @@ export function SkillsScreen() {
                   {hubQuery.error instanceof Error
                     ? hubQuery.error.message
                     : 'Failed to load marketplace skills.'}
-                </div>
-              ) : hubQuery.data &&
-                (hubQuery.data.source === 'installed-fallback' ||
-                  hubQuery.data.source === 'error') ? (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Skill marketplace unavailable — showing installed skills
-                  instead. Install{' '}
-                  <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs">
-                    clawhub
-                  </code>{' '}
-                  CLI to browse the marketplace:{' '}
-                  <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs">
-                    pip install skillhub
-                  </code>
                 </div>
               ) : null}
 
@@ -594,11 +558,11 @@ export function SkillsScreen() {
                 tab="marketplace"
                 emptyState={{
                   title: searchInput.trim()
-                    ? 'No hub skills found'
-                    : 'Search the Skills Hub',
+                    ? 'No skills found'
+                    : 'Search Skills',
                   description: searchInput.trim()
-                    ? 'Try a different search term. If Skills Hub is unavailable, local installed skills are used as fallback.'
-                    : 'Start typing to search Skills Hub and other skill sources.',
+                    ? 'Try a different search term.'
+                    : 'Start typing to search available skills.',
                 }}
                 onOpenDetails={setSelectedSkill}
                 onInstall={(skillId) => {
