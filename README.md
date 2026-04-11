@@ -82,9 +82,10 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 
 ## 📸 Screenshots
 
-|                 Chat                 |                 Files                  |
+|                 Cron Job                |                 Files                  |
 | :----------------------------------: | :------------------------------------: |
-| ![Chat](./docs/screenshots/chat.png) | ![Files](./docs/screenshots/files.png) |
+| <img width="764" height="972" alt="image" src="https://github.com/user-attachments/assets/f13f35fd-0538-4515-9902-1cbe9fb99d71" />
+ | ![Files](./docs/screenshots/files.png) |
 
 |                   Terminal                   |                  Memory                  |
 | :------------------------------------------: | :--------------------------------------: |
