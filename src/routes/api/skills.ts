@@ -5,12 +5,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { isAuthenticated } from '../../server/auth-middleware'
 import {
-  HERMES_UPGRADE_INSTRUCTIONS,
   ensureGatewayProbed,
   getCapabilities,
 } from '../../server/gateway-capabilities'
 import { requireJsonContentType } from '../../server/rate-limit'
-import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
 
 type SkillsTab = 'installed' | 'marketplace' | 'featured'
 type SkillsSort = 'name' | 'category'
@@ -128,6 +126,124 @@ function writeLocalPrefs(prefs: StudioPrefs): void {
   } catch {
     // non-fatal
   }
+}
+
+// ── Local skills scanner ────────────────────────────────────────────────────
+// Reads skills installed at ~/.hermes/skills/{category}/{skill-name}/SKILL.md
+// Used when the Hermes gateway doesn't expose /api/skills.
+
+const LOCAL_SKILLS_DIR = path.join(os.homedir(), '.hermes', 'skills')
+
+function parseFrontmatter(content: string): { meta: Record<string, unknown>; body: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  if (!match) return { meta: {}, body: content }
+  const meta: Record<string, unknown> = {}
+  // Minimal YAML line parser — handles key: value and nested hermes.tags arrays
+  let insideTags = false
+  for (const line of match[1].split('\n')) {
+    const scalar = line.match(/^(\w[\w-]*):\s*(.+)$/)
+    if (scalar) {
+      insideTags = false
+      meta[scalar[1]] = scalar[2].replace(/^["']|["']$/g, '').trim()
+    }
+    // tags: [a, b, c] inline
+    const inlineTags = line.match(/tags:\s*\[([^\]]*)\]/)
+    if (inlineTags) {
+      meta.tags = inlineTags[1].split(',').map((t) => t.trim()).filter(Boolean)
+      insideTags = false
+    }
+    // tags: (block list)
+    if (line.match(/^\s+tags:\s*$/)) { insideTags = true; meta.tags = []; continue }
+    if (insideTags && line.match(/^\s+-\s+(.+)/)) {
+      const tag = line.match(/^\s+-\s+(.+)/)![1].trim()
+      ;(meta.tags as string[]).push(tag)
+    }
+  }
+  return { meta, body: match[2].trim() }
+}
+
+function categoryFromDir(dirName: string): string {
+  const MAP: Record<string, string> = {
+    'apple': 'Productivity',
+    'autonomous-ai-agents': 'AI & LLMs',
+    'creative': 'Productivity',
+    'data-science': 'Data & Analytics',
+    'devops': 'DevOps & Cloud',
+    'diagramming': 'Productivity',
+    'domain': 'Productivity',
+    'email': 'Communication',
+    'feeds': 'Productivity',
+    'gaming': 'Productivity',
+    'gifs': 'Productivity',
+    'github': 'Git & GitHub',
+    'inference-sh': 'AI & LLMs',
+    'leisure': 'Productivity',
+    'mcp': 'AI & LLMs',
+    'media': 'Productivity',
+    'mlops': 'AI & LLMs',
+    'note-taking': 'Productivity',
+    'openfang': 'AI & LLMs',
+    'productivity': 'Productivity',
+    'red-teaming': 'DevOps & Cloud',
+    'research': 'Search & Research',
+    'smart-home': 'Productivity',
+    'social-media': 'Marketing & Sales',
+    'software-development': 'Coding Agents',
+  }
+  return MAP[dirName] || 'Productivity'
+}
+
+function readLocalSkills(): Array<SkillSummary> {
+  const skills: Array<SkillSummary> = []
+  if (!fs.existsSync(LOCAL_SKILLS_DIR)) return skills
+  const prefs = readLocalPrefs()
+  const disabledSet = new Set(prefs.disabled)
+
+  for (const categoryDir of fs.readdirSync(LOCAL_SKILLS_DIR)) {
+    if (categoryDir.startsWith('.') || categoryDir.endsWith('.md')) continue
+    const categoryPath = path.join(LOCAL_SKILLS_DIR, categoryDir)
+    if (!fs.statSync(categoryPath).isDirectory()) continue
+    const category = categoryFromDir(categoryDir)
+
+    for (const skillDir of fs.readdirSync(categoryPath)) {
+      if (skillDir.startsWith('.') || skillDir.endsWith('.md')) continue
+      const skillPath = path.join(categoryPath, skillDir)
+      if (!fs.statSync(skillPath).isDirectory()) continue
+
+      const mdPath = path.join(skillPath, 'SKILL.md')
+      if (!fs.existsSync(mdPath)) continue
+
+      try {
+        const raw = fs.readFileSync(mdPath, 'utf8')
+        const { meta, body } = parseFrontmatter(raw)
+        const id = `${categoryDir}/${skillDir}`
+        const name = typeof meta.name === 'string' ? meta.name : skillDir
+        const tags = Array.isArray(meta.tags) ? (meta.tags as string[]) : []
+        skills.push({
+          id,
+          slug: skillDir,
+          name,
+          description: typeof meta.description === 'string' ? meta.description : '',
+          author: typeof meta.author === 'string' ? meta.author : 'Hermes',
+          triggers: [],
+          tags,
+          homepage: null,
+          category,
+          icon: '✨',
+          content: body,
+          fileCount: fs.readdirSync(skillPath).length,
+          sourcePath: skillPath,
+          installed: true,
+          enabled: !disabledSet.has(id),
+          builtin: true,
+          security: { level: 'safe', flags: [], score: 0 },
+        })
+      } catch {
+        // skip corrupt skill
+      }
+    }
+  }
+  return skills
 }
 
 function normalizeSecurity(value: unknown): SecurityRisk {
@@ -280,16 +396,6 @@ export const Route = createFileRoute('/api/skills')({
           return json({ ok: false, error: 'Unauthorized' }, { status: 401 })
         }
         await ensureGatewayProbed()
-        if (!getCapabilities().skills) {
-          return json({
-            ...createCapabilityUnavailablePayload('skills'),
-            items: [],
-            skills: [],
-            total: 0,
-            page: 1,
-            categories: KNOWN_CATEGORIES,
-          })
-        }
 
         try {
           const url = new URL(request.url)
@@ -313,7 +419,10 @@ export const Route = createFileRoute('/api/skills')({
             Math.max(1, Number(url.searchParams.get('limit') || '30')),
           )
 
-          const sourceItems = await fetchHermesSkills()
+          // Use local filesystem scan when gateway doesn't expose /api/skills
+          const sourceItems = getCapabilities().skills
+            ? await fetchHermesSkills()
+            : readLocalSkills()
           const installedLookup = new Set(
             sourceItems
               .filter((skill) => skill.installed)
