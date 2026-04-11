@@ -8,11 +8,7 @@ import os from 'node:os'
 import { createFileRoute } from '@tanstack/react-router'
 import YAML from 'yaml'
 import { isAuthenticated } from '../../server/auth-middleware'
-import {
-  ensureGatewayProbed,
-  getCapabilities,
-} from '../../server/gateway-capabilities'
-import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
+import { ensureGatewayProbed } from '../../server/gateway-capabilities'
 
 type AuthResult = Response | true
 
@@ -166,17 +162,6 @@ export const Route = createFileRoute('/api/hermes-config')({
         const authResult = isAuthenticated(request) as AuthResult
         if (authResult !== true) return authResult
         await ensureGatewayProbed()
-        if (!getCapabilities().config) {
-          return Response.json({
-            ...createCapabilityUnavailablePayload('config'),
-            config: {},
-            providers: [],
-            activeProvider: '',
-            activeModel: '',
-            hermesHome: HERMES_HOME,
-          })
-        }
-
         const config = readConfig()
         const env = readEnv()
 
@@ -235,17 +220,6 @@ export const Route = createFileRoute('/api/hermes-config')({
         const authResult = isAuthenticated(request) as AuthResult
         if (authResult !== true) return authResult
         await ensureGatewayProbed()
-        if (!getCapabilities().config) {
-          return new Response(
-            JSON.stringify(
-              createCapabilityUnavailablePayload('config', {
-                error: 'Configuration updates are unavailable on this backend.',
-              }),
-            ),
-            { status: 503, headers: { 'Content-Type': 'application/json' } },
-          )
-        }
-
         const body = (await request.json()) as Record<string, unknown>
 
         // Handle config updates

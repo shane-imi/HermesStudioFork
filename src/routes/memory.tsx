@@ -1,10 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import BackendUnavailableState from '@/components/backend-unavailable-state'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
-import { useFeatureAvailable } from '@/hooks/use-feature-available'
 import { usePageTitle } from '@/hooks/use-page-title'
-import { getUnavailableReason } from '@/lib/feature-gates'
 
 const MemoryBrowserScreen = lazy(async () => {
   const module = await import('@/screens/memory/memory-browser-screen')
@@ -20,7 +17,6 @@ export const Route = createFileRoute('/memory')({
   ssr: false,
   component: function MemoryRoute() {
     const [tab, setTab] = useState<'memory' | 'knowledge'>('memory')
-    const memoryAvailable = useFeatureAvailable('memory')
 
     usePageTitle('Memory')
 
@@ -48,14 +44,7 @@ export const Route = createFileRoute('/memory')({
                   <RouteLoadingState label="Loading memory browser..." />
                 }
               >
-                {memoryAvailable ? (
-                  <MemoryBrowserScreen />
-                ) : (
-                  <BackendUnavailableState
-                    feature="Memory"
-                    description={getUnavailableReason('Memory')}
-                  />
-                )}
+                <MemoryBrowserScreen />
               </Suspense>
             ) : null}
           </TabsPanel>
