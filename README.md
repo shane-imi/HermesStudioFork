@@ -14,7 +14,6 @@
 > Not a chat wrapper. A complete studio — orchestrate agents, approve actions, browse memory, manage skills, and schedule recurring tasks, all from one interface. Built for power users running Hermes Agent locally.
 
 </div>
----
 
 ## ✨ Features
 
