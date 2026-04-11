@@ -39,6 +39,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { getPendingApprovals } from '@/lib/approvals-store'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { UserAvatar } from '@/components/avatars'
 import { SEARCH_MODAL_EVENTS, useSearchModal } from '@/hooks/use-search-modal'
@@ -736,7 +737,19 @@ function ChatSidebarComponent({
     }
   }, [handleOpenSettings])
 
-  // ── Nav definitions ─────────────────────────────────────────────────
+  // ── Pending approvals badge ──────────────────────────────────────────
+
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(
+    () => getPendingApprovals().length,
+  )
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setPendingApprovalCount(getPendingApprovals().length)
+    }, 2000)
+    return () => window.clearInterval(id)
+  }, [])
+
+// ── Nav definitions ─────────────────────────────────────────────────
 
   // Search button definition (placed above Studio section)
   const searchItem: NavItemDef = {
@@ -763,6 +776,7 @@ function ChatSidebarComponent({
       icon: MessageMultiple01Icon,
       label: 'Chat',
       active: isChatActive,
+      badge: pendingApprovalCount > 0 ? pendingApprovalCount : undefined,
     },
     {
       kind: 'link',
