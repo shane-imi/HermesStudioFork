@@ -4,6 +4,41 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-12 — Session 11
+
+### What was done
+
+**Task #17 — MCP client protocol support (connect to external MCP servers)**
+
+The MCP settings screen already existed (752-line UI with add/edit/delete and YAML generation), but it was a draft-only workflow — changes had to be manually copy-pasted into `config.yaml`. This task completes the integration by wiring the save pathway directly to the config file.
+
+**Modified files:**
+- `src/routes/api/mcp/servers.ts` — Added `PUT` handler:
+  - Imports `fs`, `path`, `os`, `YAML` (same deps as `hermes-config.ts`)
+  - Added `readConfig()`, `writeConfig()` helpers (local copies of the pattern from `hermes-config.ts`)
+  - Added `serversToConfigDict()` — inverse of existing `readServers()`: converts `McpServerRecord[]` → `mcp_servers` dict for YAML
+  - `PUT` accepts `{ servers: McpServerRecord[] }`, validates each entry, writes `config.mcp_servers` to `~/.hermes/config.yaml`, returns `{ ok, message, servers }`
+
+- `src/screens/settings/mcp-settings-screen.tsx` — UI changes:
+  - Added `saving` boolean state
+  - Added `handleSaveToConfig()`: `PUT /api/mcp/servers` → on success: `setOriginalServers(servers)` + toast + auto-triggers `handleReload()` if reload is available
+  - Updated `isDirty` banner: was "copy YAML instruction", now shows a "Save to Config" button (disabled while saving)
+  - Updated header description: removed "until gateway config writes land" placeholder text
+  - Updated YAML section label to "Manual fallback" with clear context
+
+**Architecture:**
+- Save writes to local `~/.hermes/config.yaml` (same file Hermes reads at startup)
+- After save, auto-trigger of the existing `/api/mcp/reload` endpoint applies changes live without a full Hermes restart (where supported)
+- YAML copy-paste fallback retained for environments where Hermes home is on a different machine
+
+### Gotchas
+- The `isDirty` copy-to-clipboard handler previously also called `setOriginalServers(servers)` — this was removed since the clipboard copy should not mark the local draft as "saved"
+- `handleCopySnippet` and `handleSaveToConfig` both exist independently; save does NOT copy to clipboard
+
+### Version bump: 1.10.0 → 1.11.0
+
+---
+
 ## 2026-04-12 — Session 10
 
 ### What was done

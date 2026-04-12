@@ -6,7 +6,7 @@
 
 **The only Hermes web UI with a built-in cron job manager — schedule, monitor, and control autonomous agent tasks without touching a terminal.**
 
-[![Version](https://img.shields.io/badge/version-1.10.0-6366F1.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.11.0-6366F1.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-6366F1.svg)](CONTRIBUTING.md)
@@ -34,6 +34,7 @@
 - 🔀 **Visual Workflow Builder** — Build and run DAG-structured task pipelines for your crews; tasks run in topological order with live per-node status
 - 📋 **Crew Templates** — 7 built-in pre-configured crew templates (Research, Engineering, Creative, Operations) plus save and manage your own custom templates
 - 💰 **Cost Tracking** — per-crew token usage (input/output) and estimated API cost per agent; Usage tab on every crew with model-aware price table and reset control
+- 🔌 **MCP Server Management** — add, edit, and remove MCP servers from the Settings UI; saves directly to `~/.hermes/config.yaml` and triggers a live reload; no manual file editing required
 
 ---
 
@@ -86,6 +87,7 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 - ✅ **Visual Workflow Builder** — DAG editor for orchestrating sequential and parallel agent task pipelines; nodes, bezier edges, auto-layout, and live execution with SSE status updates per node
 - ✅ **Crew Templates** — 7 built-in templates across 4 categories (Research Team, Deep Dive, Full-Stack Squad, Code Review Crew, Content Studio, Ops Team, Sprint Team); save your own templates; one-click pre-fill of the create-crew dialog
 - ✅ **Cost Tracking** — Usage tab on every crew detail screen; per-agent input/output token counts pulled from Hermes session API after each run; estimated cost using a built-in model price table; crew-level and per-member totals; reset control; requires Hermes enhanced mode
+- ✅ **MCP Server Management** — Settings → MCP Servers: add/edit/delete stdio and HTTP MCP servers; "Save to Config" writes directly to `~/.hermes/config.yaml` and auto-triggers a live reload; YAML copy fallback retained for environments where file access is unavailable
 
 ---
 

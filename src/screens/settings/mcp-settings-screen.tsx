@@ -389,6 +389,7 @@ export function McpSettingsScreen() {
   const [originalServers, setOriginalServers] = useState<Array<McpServer>>([])
   const [loading, setLoading] = useState(true)
   const [reloadPending, setReloadPending] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [reloadAvailable, setReloadAvailable] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -487,10 +488,39 @@ export function McpSettingsScreen() {
     )
   }
 
+  async function handleSaveToConfig() {
+    setSaving(true)
+    try {
+      const response = await fetch('/api/mcp/servers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ servers }),
+      })
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean
+        message?: string
+        error?: string
+      }
+      if (payload.ok) {
+        setOriginalServers(servers)
+        toast(payload.message ?? 'MCP servers saved.', { type: 'success' })
+        // Auto-trigger reload if available so changes apply immediately
+        if (reloadAvailable) {
+          void handleReload()
+        }
+      } else {
+        toast(payload.error ?? 'Failed to save MCP servers.', { type: 'error' })
+      }
+    } catch {
+      toast('Could not reach save endpoint.', { type: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleCopySnippet() {
     try {
       await writeTextToClipboard(yamlSnippet)
-      setOriginalServers(servers)
       toast('YAML snippet copied.', { type: 'success' })
     } catch {
       toast('Clipboard unavailable.', { type: 'error' })
@@ -546,12 +576,12 @@ export function McpSettingsScreen() {
                     MCP Servers
                   </h1>
                   <p className="mt-1 text-sm text-primary-600">
-                    Review configured MCP servers, draft changes locally, and
-                    copy the YAML into
-                    <code className="mx-1 rounded bg-primary-200/60 px-1.5 py-0.5 font-mono text-xs text-ink">
-                      config.yaml
-                    </code>
-                    until gateway config writes land.
+                    Add, edit, and remove MCP servers. Save writes directly
+                    to{' '}
+                    <code className="rounded bg-primary-200/60 px-1.5 py-0.5 font-mono text-xs text-ink">
+                      ~/.hermes/config.yaml
+                    </code>{' '}
+                    and triggers a live reload.
                   </p>
                 </div>
               </div>
@@ -569,13 +599,17 @@ export function McpSettingsScreen() {
           ) : null}
 
           {isDirty ? (
-            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
-              You have unsaved changes. Copy the YAML below and paste it into
-              your{' '}
-              <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs">
-                config.yaml
-              </code>
-              .
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 shadow-sm">
+              <p className="text-sm text-amber-800">
+                You have unsaved changes.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => void handleSaveToConfig()}
+                disabled={saving}
+              >
+                {saving ? 'Saving…' : 'Save to Config'}
+              </Button>
             </div>
           ) : null}
 
@@ -714,15 +748,11 @@ export function McpSettingsScreen() {
                   Generated YAML
                 </h2>
                 <p className="mt-1 text-sm text-primary-600">
-                  Add this to your{' '}
+                  Manual fallback — copy into{' '}
                   <code className="rounded bg-primary-200/60 px-1.5 py-0.5 font-mono text-xs text-ink">
                     config.yaml
                   </code>{' '}
-                  under{' '}
-                  <code className="rounded bg-primary-200/60 px-1.5 py-0.5 font-mono text-xs text-ink">
-                    mcp_servers
-                  </code>
-                  .
+                  if the Save button above is unavailable.
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={handleCopySnippet}>
