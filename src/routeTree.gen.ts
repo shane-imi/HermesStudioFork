@@ -20,9 +20,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as CrewsIndexRouteImport } from './routes/crews/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as SettingsProvidersRouteImport } from './routes/settings/providers'
 import { Route as SettingsMcpRouteImport } from './routes/settings/mcp'
+import { Route as CrewsCrewIdRouteImport } from './routes/crews/$crewId'
 import { Route as ChatSessionKeyRouteImport } from './routes/chat/$sessionKey'
 import { Route as ApiWorkspaceRouteImport } from './routes/api/workspace'
 import { Route as ApiTerminalStreamRouteImport } from './routes/api/terminal-stream'
@@ -51,6 +53,7 @@ import { Route as ApiConnectionStatusRouteImport } from './routes/api/connection
 import { Route as ApiChatEventsRouteImport } from './routes/api/chat-events'
 import { Route as ApiAuthCheckRouteImport } from './routes/api/auth-check'
 import { Route as ApiAuthRouteImport } from './routes/api/auth'
+import { Route as ApiCrewsIndexRouteImport } from './routes/api/crews/index'
 import { Route as ApiSkillsUninstallRouteImport } from './routes/api/skills/uninstall'
 import { Route as ApiSkillsSettingsRouteImport } from './routes/api/skills/settings'
 import { Route as ApiSkillsInstallRouteImport } from './routes/api/skills/install'
@@ -77,8 +80,10 @@ import { Route as ApiKnowledgeGraphRouteImport } from './routes/api/knowledge/gr
 import { Route as ApiHermesProxySplatRouteImport } from './routes/api/hermes-proxy/$'
 import { Route as ApiHermesJobsJobIdRouteImport } from './routes/api/hermes-jobs.$jobId'
 import { Route as ApiEventsReplayRouteImport } from './routes/api/events/replay'
+import { Route as ApiCrewsCrewIdRouteImport } from './routes/api/crews/$crewId'
 import { Route as ApiSessionsSessionKeyStatusRouteImport } from './routes/api/sessions/$sessionKey.status'
 import { Route as ApiSessionsSessionKeyActiveRunRouteImport } from './routes/api/sessions/$sessionKey.active-run'
+import { Route as ApiCrewsCrewIdDispatchRouteImport } from './routes/api/crews/$crewId.dispatch'
 import { Route as ApiApprovalsApprovalIdDenyRouteImport } from './routes/api/approvals.$approvalId.deny'
 import { Route as ApiApprovalsApprovalIdApproveRouteImport } from './routes/api/approvals.$approvalId.approve'
 
@@ -137,6 +142,11 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SettingsRoute,
 } as any)
+const CrewsIndexRoute = CrewsIndexRouteImport.update({
+  id: '/crews/',
+  path: '/crews/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -151,6 +161,11 @@ const SettingsMcpRoute = SettingsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
   getParentRoute: () => SettingsRoute,
+} as any)
+const CrewsCrewIdRoute = CrewsCrewIdRouteImport.update({
+  id: '/crews/$crewId',
+  path: '/crews/$crewId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ChatSessionKeyRoute = ChatSessionKeyRouteImport.update({
   id: '/chat/$sessionKey',
@@ -292,6 +307,11 @@ const ApiAuthRoute = ApiAuthRouteImport.update({
   path: '/api/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCrewsIndexRoute = ApiCrewsIndexRouteImport.update({
+  id: '/api/crews/',
+  path: '/api/crews/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSkillsUninstallRoute = ApiSkillsUninstallRouteImport.update({
   id: '/uninstall',
   path: '/uninstall',
@@ -422,6 +442,11 @@ const ApiEventsReplayRoute = ApiEventsReplayRouteImport.update({
   path: '/replay',
   getParentRoute: () => ApiEventsRoute,
 } as any)
+const ApiCrewsCrewIdRoute = ApiCrewsCrewIdRouteImport.update({
+  id: '/api/crews/$crewId',
+  path: '/api/crews/$crewId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSessionsSessionKeyStatusRoute =
   ApiSessionsSessionKeyStatusRouteImport.update({
     id: '/$sessionKey/status',
@@ -434,6 +459,11 @@ const ApiSessionsSessionKeyActiveRunRoute =
     path: '/$sessionKey/active-run',
     getParentRoute: () => ApiSessionsRoute,
   } as any)
+const ApiCrewsCrewIdDispatchRoute = ApiCrewsCrewIdDispatchRouteImport.update({
+  id: '/dispatch',
+  path: '/dispatch',
+  getParentRoute: () => ApiCrewsCrewIdRoute,
+} as any)
 const ApiApprovalsApprovalIdDenyRoute =
   ApiApprovalsApprovalIdDenyRouteImport.update({
     id: '/api/approvals/$approvalId/deny',
@@ -486,10 +516,13 @@ export interface FileRoutesByFullPath {
   '/api/terminal-stream': typeof ApiTerminalStreamRoute
   '/api/workspace': typeof ApiWorkspaceRoute
   '/chat/$sessionKey': typeof ChatSessionKeyRoute
+  '/crews/$crewId': typeof CrewsCrewIdRoute
   '/settings/mcp': typeof SettingsMcpRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/chat/': typeof ChatIndexRoute
+  '/crews/': typeof CrewsIndexRoute
   '/settings/': typeof SettingsIndexRoute
+  '/api/crews/$crewId': typeof ApiCrewsCrewIdRouteWithChildren
   '/api/events/replay': typeof ApiEventsReplayRoute
   '/api/hermes-jobs/$jobId': typeof ApiHermesJobsJobIdRoute
   '/api/hermes-proxy/$': typeof ApiHermesProxySplatRoute
@@ -516,8 +549,10 @@ export interface FileRoutesByFullPath {
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/crews/': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
+  '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -559,10 +594,13 @@ export interface FileRoutesByTo {
   '/api/terminal-stream': typeof ApiTerminalStreamRoute
   '/api/workspace': typeof ApiWorkspaceRoute
   '/chat/$sessionKey': typeof ChatSessionKeyRoute
+  '/crews/$crewId': typeof CrewsCrewIdRoute
   '/settings/mcp': typeof SettingsMcpRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/chat': typeof ChatIndexRoute
+  '/crews': typeof CrewsIndexRoute
   '/settings': typeof SettingsIndexRoute
+  '/api/crews/$crewId': typeof ApiCrewsCrewIdRouteWithChildren
   '/api/events/replay': typeof ApiEventsReplayRoute
   '/api/hermes-jobs/$jobId': typeof ApiHermesJobsJobIdRoute
   '/api/hermes-proxy/$': typeof ApiHermesProxySplatRoute
@@ -589,8 +627,10 @@ export interface FileRoutesByTo {
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/crews': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
+  '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -634,10 +674,13 @@ export interface FileRoutesById {
   '/api/terminal-stream': typeof ApiTerminalStreamRoute
   '/api/workspace': typeof ApiWorkspaceRoute
   '/chat/$sessionKey': typeof ChatSessionKeyRoute
+  '/crews/$crewId': typeof CrewsCrewIdRoute
   '/settings/mcp': typeof SettingsMcpRoute
   '/settings/providers': typeof SettingsProvidersRoute
   '/chat/': typeof ChatIndexRoute
+  '/crews/': typeof CrewsIndexRoute
   '/settings/': typeof SettingsIndexRoute
+  '/api/crews/$crewId': typeof ApiCrewsCrewIdRouteWithChildren
   '/api/events/replay': typeof ApiEventsReplayRoute
   '/api/hermes-jobs/$jobId': typeof ApiHermesJobsJobIdRoute
   '/api/hermes-proxy/$': typeof ApiHermesProxySplatRoute
@@ -664,8 +707,10 @@ export interface FileRoutesById {
   '/api/skills/install': typeof ApiSkillsInstallRoute
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
+  '/api/crews/': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
+  '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
   '/api/sessions/$sessionKey/active-run': typeof ApiSessionsSessionKeyActiveRunRoute
   '/api/sessions/$sessionKey/status': typeof ApiSessionsSessionKeyStatusRoute
 }
@@ -710,10 +755,13 @@ export interface FileRouteTypes {
     | '/api/terminal-stream'
     | '/api/workspace'
     | '/chat/$sessionKey'
+    | '/crews/$crewId'
     | '/settings/mcp'
     | '/settings/providers'
     | '/chat/'
+    | '/crews/'
     | '/settings/'
+    | '/api/crews/$crewId'
     | '/api/events/replay'
     | '/api/hermes-jobs/$jobId'
     | '/api/hermes-proxy/$'
@@ -740,8 +788,10 @@ export interface FileRouteTypes {
     | '/api/skills/install'
     | '/api/skills/settings'
     | '/api/skills/uninstall'
+    | '/api/crews/'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
+    | '/api/crews/$crewId/dispatch'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   fileRoutesByTo: FileRoutesByTo
@@ -783,10 +833,13 @@ export interface FileRouteTypes {
     | '/api/terminal-stream'
     | '/api/workspace'
     | '/chat/$sessionKey'
+    | '/crews/$crewId'
     | '/settings/mcp'
     | '/settings/providers'
     | '/chat'
+    | '/crews'
     | '/settings'
+    | '/api/crews/$crewId'
     | '/api/events/replay'
     | '/api/hermes-jobs/$jobId'
     | '/api/hermes-proxy/$'
@@ -813,8 +866,10 @@ export interface FileRouteTypes {
     | '/api/skills/install'
     | '/api/skills/settings'
     | '/api/skills/uninstall'
+    | '/api/crews'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
+    | '/api/crews/$crewId/dispatch'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   id:
@@ -857,10 +912,13 @@ export interface FileRouteTypes {
     | '/api/terminal-stream'
     | '/api/workspace'
     | '/chat/$sessionKey'
+    | '/crews/$crewId'
     | '/settings/mcp'
     | '/settings/providers'
     | '/chat/'
+    | '/crews/'
     | '/settings/'
+    | '/api/crews/$crewId'
     | '/api/events/replay'
     | '/api/hermes-jobs/$jobId'
     | '/api/hermes-proxy/$'
@@ -887,8 +945,10 @@ export interface FileRouteTypes {
     | '/api/skills/install'
     | '/api/skills/settings'
     | '/api/skills/uninstall'
+    | '/api/crews/'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
+    | '/api/crews/$crewId/dispatch'
     | '/api/sessions/$sessionKey/active-run'
     | '/api/sessions/$sessionKey/status'
   fileRoutesById: FileRoutesById
@@ -932,7 +992,10 @@ export interface RootRouteChildren {
   ApiTerminalStreamRoute: typeof ApiTerminalStreamRoute
   ApiWorkspaceRoute: typeof ApiWorkspaceRoute
   ChatSessionKeyRoute: typeof ChatSessionKeyRoute
+  CrewsCrewIdRoute: typeof CrewsCrewIdRoute
   ChatIndexRoute: typeof ChatIndexRoute
+  CrewsIndexRoute: typeof CrewsIndexRoute
+  ApiCrewsCrewIdRoute: typeof ApiCrewsCrewIdRouteWithChildren
   ApiHermesProxySplatRoute: typeof ApiHermesProxySplatRoute
   ApiKnowledgeGraphRoute: typeof ApiKnowledgeGraphRoute
   ApiKnowledgeListRoute: typeof ApiKnowledgeListRoute
@@ -948,6 +1011,7 @@ export interface RootRouteChildren {
   ApiProfilesListRoute: typeof ApiProfilesListRoute
   ApiProfilesReadRoute: typeof ApiProfilesReadRoute
   ApiProfilesRenameRoute: typeof ApiProfilesRenameRoute
+  ApiCrewsIndexRoute: typeof ApiCrewsIndexRoute
   ApiApprovalsApprovalIdApproveRoute: typeof ApiApprovalsApprovalIdApproveRoute
   ApiApprovalsApprovalIdDenyRoute: typeof ApiApprovalsApprovalIdDenyRoute
 }
@@ -1031,6 +1095,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/crews/': {
+      id: '/crews/'
+      path: '/crews'
+      fullPath: '/crews/'
+      preLoaderRoute: typeof CrewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/': {
       id: '/chat/'
       path: '/chat'
@@ -1051,6 +1122,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/mcp'
       preLoaderRoute: typeof SettingsMcpRouteImport
       parentRoute: typeof SettingsRoute
+    }
+    '/crews/$crewId': {
+      id: '/crews/$crewId'
+      path: '/crews/$crewId'
+      fullPath: '/crews/$crewId'
+      preLoaderRoute: typeof CrewsCrewIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/chat/$sessionKey': {
       id: '/chat/$sessionKey'
@@ -1248,6 +1326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/crews/': {
+      id: '/api/crews/'
+      path: '/api/crews'
+      fullPath: '/api/crews/'
+      preLoaderRoute: typeof ApiCrewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/skills/uninstall': {
       id: '/api/skills/uninstall'
       path: '/uninstall'
@@ -1430,6 +1515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiEventsReplayRouteImport
       parentRoute: typeof ApiEventsRoute
     }
+    '/api/crews/$crewId': {
+      id: '/api/crews/$crewId'
+      path: '/api/crews/$crewId'
+      fullPath: '/api/crews/$crewId'
+      preLoaderRoute: typeof ApiCrewsCrewIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionKey/status': {
       id: '/api/sessions/$sessionKey/status'
       path: '/$sessionKey/status'
@@ -1443,6 +1535,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/sessions/$sessionKey/active-run'
       preLoaderRoute: typeof ApiSessionsSessionKeyActiveRunRouteImport
       parentRoute: typeof ApiSessionsRoute
+    }
+    '/api/crews/$crewId/dispatch': {
+      id: '/api/crews/$crewId/dispatch'
+      path: '/dispatch'
+      fullPath: '/api/crews/$crewId/dispatch'
+      preLoaderRoute: typeof ApiCrewsCrewIdDispatchRouteImport
+      parentRoute: typeof ApiCrewsCrewIdRoute
     }
     '/api/approvals/$approvalId/deny': {
       id: '/api/approvals/$approvalId/deny'
@@ -1553,6 +1652,18 @@ const ApiSkillsRouteWithChildren = ApiSkillsRoute._addFileChildren(
   ApiSkillsRouteChildren,
 )
 
+interface ApiCrewsCrewIdRouteChildren {
+  ApiCrewsCrewIdDispatchRoute: typeof ApiCrewsCrewIdDispatchRoute
+}
+
+const ApiCrewsCrewIdRouteChildren: ApiCrewsCrewIdRouteChildren = {
+  ApiCrewsCrewIdDispatchRoute: ApiCrewsCrewIdDispatchRoute,
+}
+
+const ApiCrewsCrewIdRouteWithChildren = ApiCrewsCrewIdRoute._addFileChildren(
+  ApiCrewsCrewIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
@@ -1592,7 +1703,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTerminalStreamRoute: ApiTerminalStreamRoute,
   ApiWorkspaceRoute: ApiWorkspaceRoute,
   ChatSessionKeyRoute: ChatSessionKeyRoute,
+  CrewsCrewIdRoute: CrewsCrewIdRoute,
   ChatIndexRoute: ChatIndexRoute,
+  CrewsIndexRoute: CrewsIndexRoute,
+  ApiCrewsCrewIdRoute: ApiCrewsCrewIdRouteWithChildren,
   ApiHermesProxySplatRoute: ApiHermesProxySplatRoute,
   ApiKnowledgeGraphRoute: ApiKnowledgeGraphRoute,
   ApiKnowledgeListRoute: ApiKnowledgeListRoute,
@@ -1608,6 +1722,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProfilesListRoute: ApiProfilesListRoute,
   ApiProfilesReadRoute: ApiProfilesReadRoute,
   ApiProfilesRenameRoute: ApiProfilesRenameRoute,
+  ApiCrewsIndexRoute: ApiCrewsIndexRoute,
   ApiApprovalsApprovalIdApproveRoute: ApiApprovalsApprovalIdApproveRoute,
   ApiApprovalsApprovalIdDenyRoute: ApiApprovalsApprovalIdDenyRoute,
 }
