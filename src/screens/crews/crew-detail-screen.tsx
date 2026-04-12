@@ -87,6 +87,11 @@ function MemberCard({ member }: { member: CrewMember }) {
         </p>
       )}
 
+      {member.profileName && (
+        <p className="mb-2 text-[10px] text-[var(--theme-muted)]">
+          📁 {member.profileName} workspace
+        </p>
+      )}
       <Link
         to="/chat/$sessionKey"
         params={{ sessionKey: member.sessionKey }}

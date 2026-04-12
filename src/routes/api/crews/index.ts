@@ -112,6 +112,10 @@ export const Route = createFileRoute('/api/crews/')({
               typeof m.role === 'string' ? m.role : 'executor'
 
             const sessionKey = await mintSession(personaDef.name.toLowerCase(), model)
+            const profileName =
+              typeof m.profileName === 'string' && m.profileName
+                ? m.profileName
+                : null
 
             return {
               sessionKey,
@@ -121,6 +125,7 @@ export const Route = createFileRoute('/api/crews/')({
               roleLabel: personaDef.role,
               color: personaDef.color,
               model,
+              profileName,
             }
           }),
         )

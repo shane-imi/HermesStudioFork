@@ -15,6 +15,8 @@ export interface CrewMember {
   roleLabel: string
   color: string
   model: string | null
+  /** Profile name that scopes this agent's file explorer workspace */
+  profileName: string | null
   status: CrewMemberStatus
   lastActivity: string | null
 }
@@ -36,6 +38,7 @@ export interface CreateCrewInput {
     persona: string
     role: CrewMemberRole
     model?: string | null
+    profileName?: string | null
   }>
 }
 

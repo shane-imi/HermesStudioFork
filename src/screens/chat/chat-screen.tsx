@@ -74,6 +74,7 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/components/ui/toast'
 import { hapticTap } from '@/lib/haptics'
 import { FileExplorerSidebar } from '@/components/file-explorer'
+import { useActiveProfile } from '@/hooks/use-active-profile'
 import { SEARCH_MODAL_EVENTS } from '@/hooks/use-search-modal'
 import { SIDEBAR_TOGGLE_EVENT } from '@/hooks/use-global-shortcuts'
 import { useWorkspaceStore } from '@/stores/workspace-store'
@@ -508,6 +509,7 @@ export function ChatScreen({
     const stored = localStorage.getItem('hermes-file-explorer-collapsed')
     return stored === null ? true : stored === 'true'
   })
+  const activeProfile = useActiveProfile()
   const { isMobile } = useChatMobile(queryClient)
   const mobileKeyboardInset = useWorkspaceStore((s) => s.mobileKeyboardInset)
   const mobileComposerFocused = useWorkspaceStore(
@@ -2437,6 +2439,7 @@ export function ChatScreen({
             collapsed={fileExplorerCollapsed}
             onToggle={handleToggleFileExplorer}
             onInsertReference={handleInsertFileReference}
+            profileName={activeProfile !== 'default' ? activeProfile : undefined}
           />
         )}
 

@@ -29,6 +29,8 @@ export interface CrewMember {
   roleLabel: string      // 'Frontend Developer'
   color: string          // Tailwind color class
   model: string | null
+  /** Optional profile name — scopes this agent's file explorer to that profile's workspace */
+  profileName: string | null
   status: CrewMemberStatus
   lastActivity: string | null  // ISO string of latest message preview
 }
@@ -99,7 +101,7 @@ export function getCrew(crewId: string): Crew | null {
 export function createCrew(input: {
   name: string
   goal: string
-  members: Array<Omit<CrewMember, 'id' | 'status' | 'lastActivity'>>
+  members: Array<Omit<CrewMember, 'id' | 'status' | 'lastActivity'> & { profileName?: string | null }>
 }): Crew {
   const now = Date.now()
   const crew: Crew = {
@@ -112,6 +114,7 @@ export function createCrew(input: {
     members: input.members.map((m) => ({
       ...m,
       id: randomUUID(),
+      profileName: m.profileName ?? null,
       status: 'idle',
       lastActivity: null,
     })),
