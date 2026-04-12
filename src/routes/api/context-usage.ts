@@ -110,6 +110,8 @@ export const Route = createFileRoute('/api/context-usage')({
               model: '',
               staticTokens: 0,
               conversationTokens: 0,
+              inputTokens: 0,
+              outputTokens: 0,
             })
           }
 
@@ -191,6 +193,8 @@ export const Route = createFileRoute('/api/context-usage')({
             model,
             staticTokens: 0,
             conversationTokens: usedTokens,
+            inputTokens,
+            outputTokens,
           })
         } catch {
           return json({
@@ -201,6 +205,8 @@ export const Route = createFileRoute('/api/context-usage')({
             model: '',
             staticTokens: 0,
             conversationTokens: 0,
+            inputTokens: 0,
+            outputTokens: 0,
           })
         }
       },

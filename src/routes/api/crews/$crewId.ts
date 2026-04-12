@@ -15,6 +15,7 @@ import {
   deleteCrew,
 } from '../../../server/crew-store'
 import { deleteWorkflow } from '../../../server/workflow-store'
+import { deleteCrewUsage } from '../../../server/cost-store'
 
 export const Route = createFileRoute('/api/crews/$crewId')({
   server: {
@@ -88,6 +89,7 @@ export const Route = createFileRoute('/api/crews/$crewId')({
           return json({ ok: false, error: 'Crew not found' }, { status: 404 })
         }
         deleteWorkflow(params.crewId)
+        deleteCrewUsage(params.crewId)
         return json({ ok: true })
       },
     },

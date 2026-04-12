@@ -4,6 +4,44 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-12 — Session 10
+
+### What was done
+
+**Task #16 — Cost tracking per crew**
+
+Token usage and estimated API cost tracking per crew. A new **Usage** tab on every crew detail screen shows cumulative input/output tokens per agent and an estimated cost based on a built-in model price table.
+
+**New files:**
+- `src/types/cost.ts` — `MemberUsage`, `CrewUsage`, `CostStoreData` types
+- `src/server/cost-store.ts` — file-backed store in `.runtime/costs.json`; price table for Anthropic/OpenAI/Google models with fuzzy matching; `recordMemberUsage()` upserts cumulative totals and re-derives crew-level sums; `deleteCrewUsage()` called on crew deletion
+- `src/routes/api/crews/$crewId.usage.ts` — `GET` (fetch usage), `POST` (record member snapshot), `DELETE` (reset crew usage)
+- `src/lib/cost-api.ts` — client helpers including `fetchAndRecordUsage()` which chains: fetch `/api/context-usage` for token data → POST to usage endpoint → invalidate `['crew-usage', crewId]` query
+- `src/screens/crews/components/cost-panel.tsx` — Usage tab UI: KPI strip (total tokens, input/output split, est. cost), per-agent table with model badges, portable-mode notice, reset button
+
+**Modified files:**
+- `src/routes/api/context-usage.ts` — purely additive: added `inputTokens` and `outputTokens` to all three return paths; these were already computed (lines 118-119) but not returned
+- `src/routes/api/crews/$crewId.ts` — added `deleteCrewUsage(params.crewId)` in DELETE handler (alongside existing `deleteWorkflow`)
+- `src/screens/crews/crew-detail-screen.tsx` — added `'usage'` to tab union type; `BarChartIcon` import; `CostPanel` import; `fetchAndRecordUsage` called in `handleRunEnd` after status update; Usage tab in tab bar + body
+
+**Architecture decisions:**
+- Pull-on-done pattern: client queries Hermes session API after each `done` SSE event (no changes to `send-stream.ts`)
+- Token data requires Hermes enhanced mode; portable mode gracefully shows dashes
+- Cost store is separate from crew store to avoid bloating `crews.json`
+
+### Price table models covered
+Anthropic: claude-opus-4-6/4-5, claude-sonnet-4-6/4-5/4, claude-haiku-4-5/3.5, claude-3-opus
+OpenAI: gpt-4.1, gpt-4.1-mini, gpt-4o, gpt-4o-mini, gpt-4-turbo, o1, o3-mini
+Google: gemini-2.5-pro, gemini-2.5-flash, gemini-2.0-flash
+
+### Gotchas encountered
+- `context-usage.ts` already computed `inputTokens`/`outputTokens` at lines 118-119 but never returned them — the fix was a two-line addition to the return JSON
+- Zero-token entries (portable mode) are recorded if context-usage returns any data but filtered out of `fetchAndRecordUsage` with a guard (`if (inputTokens === 0 && outputTokens === 0) return`)
+
+### Version bump: 1.9.0 → 1.10.0
+
+---
+
 ## 2026-04-12 — Session 9
 
 ### What was done

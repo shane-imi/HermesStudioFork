@@ -88,6 +88,7 @@ import { Route as ApiSessionsSessionKeyActiveRunRouteImport } from './routes/api
 import { Route as ApiHermesRunsRunIdEventsRouteImport } from './routes/api/hermes-runs.$runId.events'
 import { Route as ApiCrewsTemplatesIdRouteImport } from './routes/api/crews/templates/$id'
 import { Route as ApiCrewsCrewIdWorkflowRouteImport } from './routes/api/crews/$crewId.workflow'
+import { Route as ApiCrewsCrewIdUsageRouteImport } from './routes/api/crews/$crewId.usage'
 import { Route as ApiCrewsCrewIdDispatchRouteImport } from './routes/api/crews/$crewId.dispatch'
 import { Route as ApiApprovalsApprovalIdDenyRouteImport } from './routes/api/approvals.$approvalId.deny'
 import { Route as ApiApprovalsApprovalIdApproveRouteImport } from './routes/api/approvals.$approvalId.approve'
@@ -490,6 +491,11 @@ const ApiCrewsCrewIdWorkflowRoute = ApiCrewsCrewIdWorkflowRouteImport.update({
   path: '/workflow',
   getParentRoute: () => ApiCrewsCrewIdRoute,
 } as any)
+const ApiCrewsCrewIdUsageRoute = ApiCrewsCrewIdUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => ApiCrewsCrewIdRoute,
+} as any)
 const ApiCrewsCrewIdDispatchRoute = ApiCrewsCrewIdDispatchRouteImport.update({
   id: '/dispatch',
   path: '/dispatch',
@@ -585,6 +591,7 @@ export interface FileRoutesByFullPath {
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
+  '/api/crews/$crewId/usage': typeof ApiCrewsCrewIdUsageRoute
   '/api/crews/$crewId/workflow': typeof ApiCrewsCrewIdWorkflowRoute
   '/api/crews/templates/$id': typeof ApiCrewsTemplatesIdRoute
   '/api/hermes-runs/$runId/events': typeof ApiHermesRunsRunIdEventsRoute
@@ -668,6 +675,7 @@ export interface FileRoutesByTo {
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
+  '/api/crews/$crewId/usage': typeof ApiCrewsCrewIdUsageRoute
   '/api/crews/$crewId/workflow': typeof ApiCrewsCrewIdWorkflowRoute
   '/api/crews/templates/$id': typeof ApiCrewsTemplatesIdRoute
   '/api/hermes-runs/$runId/events': typeof ApiHermesRunsRunIdEventsRoute
@@ -753,6 +761,7 @@ export interface FileRoutesById {
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
   '/api/crews/$crewId/dispatch': typeof ApiCrewsCrewIdDispatchRoute
+  '/api/crews/$crewId/usage': typeof ApiCrewsCrewIdUsageRoute
   '/api/crews/$crewId/workflow': typeof ApiCrewsCrewIdWorkflowRoute
   '/api/crews/templates/$id': typeof ApiCrewsTemplatesIdRoute
   '/api/hermes-runs/$runId/events': typeof ApiHermesRunsRunIdEventsRoute
@@ -839,6 +848,7 @@ export interface FileRouteTypes {
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
     | '/api/crews/$crewId/dispatch'
+    | '/api/crews/$crewId/usage'
     | '/api/crews/$crewId/workflow'
     | '/api/crews/templates/$id'
     | '/api/hermes-runs/$runId/events'
@@ -922,6 +932,7 @@ export interface FileRouteTypes {
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
     | '/api/crews/$crewId/dispatch'
+    | '/api/crews/$crewId/usage'
     | '/api/crews/$crewId/workflow'
     | '/api/crews/templates/$id'
     | '/api/hermes-runs/$runId/events'
@@ -1006,6 +1017,7 @@ export interface FileRouteTypes {
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
     | '/api/crews/$crewId/dispatch'
+    | '/api/crews/$crewId/usage'
     | '/api/crews/$crewId/workflow'
     | '/api/crews/templates/$id'
     | '/api/hermes-runs/$runId/events'
@@ -1635,6 +1647,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCrewsCrewIdWorkflowRouteImport
       parentRoute: typeof ApiCrewsCrewIdRoute
     }
+    '/api/crews/$crewId/usage': {
+      id: '/api/crews/$crewId/usage'
+      path: '/usage'
+      fullPath: '/api/crews/$crewId/usage'
+      preLoaderRoute: typeof ApiCrewsCrewIdUsageRouteImport
+      parentRoute: typeof ApiCrewsCrewIdRoute
+    }
     '/api/crews/$crewId/dispatch': {
       id: '/api/crews/$crewId/dispatch'
       path: '/dispatch'
@@ -1765,11 +1784,13 @@ const ApiSkillsRouteWithChildren = ApiSkillsRoute._addFileChildren(
 
 interface ApiCrewsCrewIdRouteChildren {
   ApiCrewsCrewIdDispatchRoute: typeof ApiCrewsCrewIdDispatchRoute
+  ApiCrewsCrewIdUsageRoute: typeof ApiCrewsCrewIdUsageRoute
   ApiCrewsCrewIdWorkflowRoute: typeof ApiCrewsCrewIdWorkflowRoute
 }
 
 const ApiCrewsCrewIdRouteChildren: ApiCrewsCrewIdRouteChildren = {
   ApiCrewsCrewIdDispatchRoute: ApiCrewsCrewIdDispatchRoute,
+  ApiCrewsCrewIdUsageRoute: ApiCrewsCrewIdUsageRoute,
   ApiCrewsCrewIdWorkflowRoute: ApiCrewsCrewIdWorkflowRoute,
 }
 

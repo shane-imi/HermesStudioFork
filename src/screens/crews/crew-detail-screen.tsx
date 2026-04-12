@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   ArrowLeft01Icon,
+  BarChartIcon,
   Delete01Icon,
   MessageMultiple01Icon,
   PlayIcon,
@@ -14,6 +15,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { DispatchDialog } from './components/dispatch-dialog'
 import { WorkflowBuilder } from './components/workflow-builder'
+import { CostPanel } from './components/cost-panel'
 import { Tabs, TabsList, TabsTab, TabsPanel } from '@/components/ui/tabs'
 import type { Crew, CrewMember, CrewMemberStatus } from '@/lib/crews-api'
 import {
@@ -23,6 +25,7 @@ import {
   updateCrew,
   updateMemberStatus,
 } from '@/lib/crews-api'
+import { fetchAndRecordUsage } from '@/lib/cost-api'
 import { toast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 
@@ -165,7 +168,7 @@ export function CrewDetailScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'workflow'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'workflow' | 'usage'>('overview')
   const [dispatchOpen, setDispatchOpen] = useState(false)
   const [activity, setActivity] = useState<ActivityEntry[]>([])
   const [liveMembers, setLiveMembers] = useState<
@@ -317,10 +320,19 @@ export function CrewDetailScreen() {
         const sk =
           typeof payload.sessionKey === 'string' ? payload.sessionKey : null
         if (!sk || !sessionKeys.has(sk)) return
+        const member = memberBySession[sk]
         const status =
           payload.error || payload.errorMessage ? 'error' : 'done'
         setLiveMembers((prev) => ({ ...prev, [sk]: status }))
         void updateMemberStatus(crewId, sk, status)
+        // Fetch token counts from Hermes and record them in the cost store
+        if (member) {
+          void fetchAndRecordUsage(
+            crewId,
+            { sessionKey: sk, displayName: member.displayName, model: member.model },
+            queryClient,
+          )
+        }
       } catch {
         /* ignore */
       }
@@ -427,6 +439,10 @@ export function CrewDetailScreen() {
               <HugeiconsIcon icon={Share01Icon} size={13} strokeWidth={1.7} />
               Workflow
             </TabsTab>
+            <TabsTab value="usage">
+              <HugeiconsIcon icon={BarChartIcon} size={13} strokeWidth={1.7} />
+              Usage
+            </TabsTab>
           </TabsList>
         </Tabs>
       </div>
@@ -475,6 +491,10 @@ export function CrewDetailScreen() {
             crew={crew}
             displayMembers={displayMembers}
           />
+        )}
+
+        {activeTab === 'usage' && (
+          <CostPanel crewId={crewId} members={displayMembers} />
         )}
       </div>
 

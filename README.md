@@ -6,7 +6,7 @@
 
 **The only Hermes web UI with a built-in cron job manager — schedule, monitor, and control autonomous agent tasks without touching a terminal.**
 
-[![Version](https://img.shields.io/badge/version-1.9.0-6366F1.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.10.0-6366F1.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-6366F1.svg)](CONTRIBUTING.md)
@@ -33,6 +33,7 @@
 - 💾 **Session Persistence** — Auth tokens, sessions, and active runs survive server restarts via Redis (auto-connects, graceful fallback)
 - 🔀 **Visual Workflow Builder** — Build and run DAG-structured task pipelines for your crews; tasks run in topological order with live per-node status
 - 📋 **Crew Templates** — 7 built-in pre-configured crew templates (Research, Engineering, Creative, Operations) plus save and manage your own custom templates
+- 💰 **Cost Tracking** — per-crew token usage (input/output) and estimated API cost per agent; Usage tab on every crew with model-aware price table and reset control
 
 ---
 
@@ -84,6 +85,22 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 - ✅ **Interactive Knowledge Graph** — force-directed canvas in the Memory screen: zoom, pan, drag nodes, hover to highlight connections, nodes sized by degree
 - ✅ **Visual Workflow Builder** — DAG editor for orchestrating sequential and parallel agent task pipelines; nodes, bezier edges, auto-layout, and live execution with SSE status updates per node
 - ✅ **Crew Templates** — 7 built-in templates across 4 categories (Research Team, Deep Dive, Full-Stack Squad, Code Review Crew, Content Studio, Ops Team, Sprint Team); save your own templates; one-click pre-fill of the create-crew dialog
+- ✅ **Cost Tracking** — Usage tab on every crew detail screen; per-agent input/output token counts pulled from Hermes session API after each run; estimated cost using a built-in model price table; crew-level and per-member totals; reset control; requires Hermes enhanced mode
+
+---
+
+### 💰 Cost Tracking
+
+Every crew gets a **Usage** tab on its detail screen. After each agent run completes, Hermes Studio fetches the accumulated token counts from the Hermes session API and records them per agent.
+
+The tab shows:
+- **KPI strip** — total tokens, input/output split, estimated total cost
+- **Per-agent breakdown** — input tokens, output tokens, estimated cost per member; shows model badge and dashes for portable mode sessions
+- **Reset control** — clear all usage data for a crew at any time
+
+Cost estimates use a built-in price table covering Anthropic (Opus, Sonnet, Haiku), OpenAI (GPT-4.1, GPT-4o, o1/o3), and Google (Gemini 2.5 Pro/Flash) with fuzzy model matching and an `__unknown__` fallback. Prices are for reference only.
+
+Token data requires Hermes enhanced mode (a connected Hermes backend). Portable mode sessions show dashes with a notice.
 
 ---
 
