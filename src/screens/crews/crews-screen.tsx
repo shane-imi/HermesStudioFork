@@ -6,9 +6,13 @@ import { Link } from '@tanstack/react-router'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Add01Icon,
+  CheckmarkCircle02Icon,
   Delete01Icon,
+  PauseIcon,
   UserMultiple02Icon,
+  ActivitySparkIcon,
 } from '@hugeicons/core-free-icons'
+import { useMemo } from 'react'
 import { CreateCrewDialog } from './components/create-crew-dialog'
 import type { Crew } from '@/lib/crews-api'
 import {
@@ -45,6 +49,150 @@ const STATUS_CONFIG: Record<
     color: 'text-[var(--theme-accent)]',
     dot: 'bg-[var(--theme-accent)]',
   },
+}
+
+// ─── Aggregate metrics strip ─────────────────────────────────────────────────
+
+function StatChip({
+  label,
+  value,
+  accent,
+  pulse,
+  icon,
+}: {
+  label: string
+  value: number | string
+  accent?: string
+  pulse?: boolean
+  icon?: React.ReactNode
+}) {
+  return (
+    <div
+      className="flex min-w-0 flex-1 flex-col gap-1 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] px-4 py-3"
+    >
+      <div className="flex items-center gap-1.5">
+        {icon}
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--theme-muted)]">
+          {label}
+        </span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        {pulse && (
+          <span className="inline-block h-2 w-2 shrink-0 animate-pulse rounded-full bg-[var(--theme-success)]" />
+        )}
+        <span
+          className="text-2xl font-bold tabular-nums"
+          style={{ color: accent ?? 'var(--theme-text)' }}
+        >
+          {value}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function RecentActivityFeed({ crews }: { crews: Crew[] }) {
+  const items = useMemo(() => {
+    const entries: Array<{ memberName: string; crewName: string; text: string; ts: number }> = []
+    for (const crew of crews) {
+      for (const m of crew.members) {
+        if (m.lastActivity) {
+          entries.push({
+            memberName: m.displayName,
+            crewName: crew.name,
+            text: m.lastActivity,
+            ts: crew.updatedAt,
+          })
+        }
+      }
+    }
+    return entries.sort((a, b) => b.ts - a.ts).slice(0, 6)
+  }, [crews])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] px-4 py-3">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--theme-muted)]">
+        Recent Activity
+      </div>
+      <div className="space-y-1.5">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-start gap-2 text-xs">
+            <span className="shrink-0 font-medium text-[var(--theme-accent)]">
+              {item.memberName}
+            </span>
+            <span className="text-[var(--theme-muted)]">·</span>
+            <span className="truncate text-[var(--theme-text)]">{item.text}</span>
+            <span className="ml-auto shrink-0 text-[var(--theme-muted)]">{item.crewName}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function StatsStrip({ crews }: { crews: Crew[] }) {
+  const stats = useMemo(() => {
+    const totalAgents = crews.reduce((sum, c) => sum + c.members.length, 0)
+    const runningAgents = crews.reduce(
+      (sum, c) => sum + c.members.filter((m) => m.status === 'running').length,
+      0,
+    )
+    return {
+      total: crews.length,
+      active: crews.filter((c) => c.status === 'active').length,
+      paused: crews.filter((c) => c.status === 'paused').length,
+      complete: crews.filter((c) => c.status === 'complete').length,
+      totalAgents,
+      runningAgents,
+    }
+  }, [crews])
+
+  if (crews.length === 0) return null
+
+  return (
+    <div className="mb-6 space-y-3">
+      <div className="flex flex-wrap gap-3">
+        <StatChip
+          label="Crews"
+          value={stats.total}
+          icon={<HugeiconsIcon icon={UserMultiple02Icon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+        <StatChip
+          label="Active"
+          value={stats.active}
+          accent={stats.active > 0 ? 'var(--theme-success)' : undefined}
+          pulse={stats.active > 0}
+          icon={<HugeiconsIcon icon={ActivitySparkIcon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+        <StatChip
+          label="Paused"
+          value={stats.paused}
+          icon={<HugeiconsIcon icon={PauseIcon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+        <StatChip
+          label="Complete"
+          value={stats.complete}
+          accent={stats.complete > 0 ? 'var(--theme-accent)' : undefined}
+          icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+        <StatChip
+          label="Agents"
+          value={stats.totalAgents}
+          icon={<HugeiconsIcon icon={UserMultiple02Icon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+        <StatChip
+          label="Running"
+          value={stats.runningAgents}
+          accent={stats.runningAgents > 0 ? 'var(--theme-success)' : undefined}
+          pulse={stats.runningAgents > 0}
+          icon={<HugeiconsIcon icon={ActivitySparkIcon} size={12} strokeWidth={1.8} className="text-[var(--theme-muted)]" />}
+        />
+      </div>
+      <RecentActivityFeed crews={crews} />
+    </div>
+  )
 }
 
 function CrewCard({
@@ -228,6 +376,8 @@ export function CrewsScreen() {
             </button>
           </div>
         ) : (
+          <>
+          <StatsStrip crews={crews} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {crews.map((crew) => (
               <CrewCard
@@ -237,6 +387,7 @@ export function CrewsScreen() {
               />
             ))}
           </div>
+          </>
         )}
       </div>
 
