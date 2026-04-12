@@ -13,12 +13,6 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { Markdown } from '@/components/prompt-kit/markdown'
-import {
-  DialogContent,
-  DialogDescription,
-  DialogRoot,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 type WikiPageMeta = {
@@ -393,7 +387,7 @@ function GraphCanvas({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl"
+      className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl"
       style={{ border: '1px solid var(--theme-border)', background: 'var(--theme-card)' }}
     >
       {/* Zoom controls */}
@@ -454,7 +448,7 @@ function GraphCanvas({
       <svg
         ref={svgRef}
         viewBox={`0 0 ${GW} ${GH}`}
-        className="h-[540px] w-full select-none"
+        className="h-full w-full select-none"
         style={{ cursor: 'grab' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -531,7 +525,7 @@ export function KnowledgeBrowserScreen() {
   const [focusedResult, setFocusedResult] =
     useState<KnowledgeSearchResult | null>(null)
   const [mobileTreeOpen, setMobileTreeOpen] = useState(true)
-  const [graphOpen, setGraphOpen] = useState(false)
+  const [view, setView] = useState<'browse' | 'graph'>('browse')
   const deferredSearch = useDeferredValue(searchInput)
   const searchTerm = deferredSearch.trim()
 
@@ -603,7 +597,6 @@ export function KnowledgeBrowserScreen() {
   const graphQuery = useQuery({
     queryKey: ['knowledge', 'graph'],
     queryFn: () => readJson<KnowledgeGraphResponse>('/api/knowledge/graph'),
-    enabled: graphOpen,
   })
 
   const page = readQuery.data?.page ?? null
@@ -680,19 +673,30 @@ export function KnowledgeBrowserScreen() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setGraphOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-primary-100 dark:hover:bg-neutral-900"
-            style={{
-              border: '1px solid var(--theme-border)',
-              backgroundColor: 'var(--theme-card)',
-              color: 'var(--theme-text)',
-            }}
+          <div
+            className="inline-flex overflow-hidden rounded-xl"
+            style={{ border: '1px solid var(--theme-border)' }}
           >
-            <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={1.7} />
-            Graph view
-          </button>
+            {([
+              { key: 'browse', label: 'Pages', icon: File01Icon },
+              { key: 'graph', label: 'Graph', icon: Link01Icon },
+            ] as const).map(({ key, label, icon }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setView(key)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: view === key ? 'var(--theme-accent, var(--theme-card2, var(--theme-card)))' : 'var(--theme-card)',
+                  color: view === key ? 'var(--theme-accent-text, var(--theme-text))' : 'var(--theme-muted)',
+                  borderRight: key === 'browse' ? '1px solid var(--theme-border)' : undefined,
+                }}
+              >
+                <HugeiconsIcon icon={icon} size={15} strokeWidth={1.7} />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -820,8 +824,27 @@ export function KnowledgeBrowserScreen() {
           )}
         </aside>
 
-        <section className="min-h-0 rounded-2xl border border-primary-200 bg-primary-50 dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="flex items-center justify-between border-b border-primary-200 px-3 py-2 dark:border-neutral-800">
+        <section className={cn('min-h-0 rounded-2xl', view === 'graph' ? 'flex flex-col' : 'border border-primary-200 bg-primary-50 dark:border-neutral-800 dark:bg-neutral-950')}>
+          {view === 'graph' ? (
+            graphQuery.isLoading ? (
+              <StateBox label="Loading graph..." />
+            ) : graphQuery.error instanceof Error ? (
+              <StateBox label={graphQuery.error.message} error />
+            ) : (graphQuery.data?.nodes?.length ?? 0) === 0 ? (
+              <StateBox label="No graph data yet — add [[wikilinks]] to your knowledge pages" />
+            ) : (
+              <GraphCanvas
+                nodes={graphQuery.data?.nodes ?? []}
+                edges={graphQuery.data?.edges ?? []}
+                onSelect={(pathValue) => {
+                  setView('browse')
+                  handleSelectPath(pathValue)
+                }}
+              />
+            )
+          ) : null}
+
+          {view === 'browse' ? <><div className="flex items-center justify-between border-b border-primary-200 px-3 py-2 dark:border-neutral-800">
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-primary-900 dark:text-neutral-100">
                 {page?.title || selectedPath || 'Select a page'}
@@ -1039,38 +1062,9 @@ export function KnowledgeBrowserScreen() {
               </div>
             )}
           </div>
+          </> : null}
         </section>
       </div>
-
-      <DialogRoot open={graphOpen} onOpenChange={setGraphOpen}>
-        <DialogContent className="w-[min(980px,94vw)] max-w-none p-0">
-          <div className="border-b border-primary-200 px-5 py-4 dark:border-neutral-800">
-            <DialogTitle>Knowledge graph</DialogTitle>
-            <DialogDescription>
-              Page relationships from wiki links. Click any node to open that
-              page.
-            </DialogDescription>
-          </div>
-          <div className="p-5">
-            {graphQuery.isLoading ? (
-              <StateBox label="Loading graph..." />
-            ) : graphQuery.error instanceof Error ? (
-              <StateBox label={graphQuery.error.message} error />
-            ) : (graphQuery.data?.nodes?.length ?? 0) === 0 ? (
-              <StateBox label="No graph data yet" />
-            ) : (
-              <GraphCanvas
-                nodes={graphQuery.data?.nodes ?? []}
-                edges={graphQuery.data?.edges ?? []}
-                onSelect={(pathValue) => {
-                  setGraphOpen(false)
-                  handleSelectPath(pathValue)
-                }}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </DialogRoot>
     </div>
   )
 }
