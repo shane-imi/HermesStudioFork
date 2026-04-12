@@ -15,6 +15,20 @@
 
 </div>
 
+## ✨ Features
+
+- 🤖 **Hermes Agent Integration** — Direct gateway connection with real-time SSE streaming
+- 🎨 **8-Theme System** — Official, Classic, Slate, Mono — each with light and dark variants
+- 🔒 **Security Hardened** — Auth middleware on all API routes, CSP headers, path traversal guards, exec approval prompts
+- 📱 **Mobile-First PWA** — Full feature parity on any device via Tailscale
+- ⚡ **Live SSE Streaming** — Real-time agent output with tool call rendering
+- 🧠 **Memory & Skills** — Browse, search, and edit agent memory; explore 2,000+ skills
+- ✅ **Execution Approvals** — Approve, deny, or always-allow agent shell commands from the UI; resolved receipts shown inline
+- 📦 **Skill Installation** — Install/uninstall/toggle skills directly from the browser
+- ⏰ **Cron Job Manager** — The only agent UI with a full scheduler: create, edit, pause, trigger, and monitor jobs; run history inline
+- 🔐 **Permissions & Toolsets** — Configure approvals, command allowlist, toolsets, security scanner, code limits, and reasoning from Settings UI
+- 💾 **Session Persistence** — Auth tokens, sessions, and active runs survive server restarts via Redis (auto-connects, graceful fallback)
+
 ---
 
 ## ⏰ Cron Job Manager — a feature no other UI has
@@ -64,27 +78,11 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 
 ---
 
-## ✨ Features
-
-- 🤖 **Hermes Agent Integration** — Direct gateway connection with real-time SSE streaming
-- 🎨 **8-Theme System** — Official, Classic, Slate, Mono — each with light and dark variants
-- 🔒 **Security Hardened** — Auth middleware on all API routes, CSP headers, path traversal guards, exec approval prompts
-- 📱 **Mobile-First PWA** — Full feature parity on any device via Tailscale
-- ⚡ **Live SSE Streaming** — Real-time agent output with tool call rendering
-- 🧠 **Memory & Skills** — Browse, search, and edit agent memory; explore 2,000+ skills
-- ✅ **Execution Approvals** — Approve, deny, or always-allow agent shell commands from the UI; resolved receipts shown inline
-- 📦 **Skill Installation** — Install/uninstall/toggle skills directly from the browser
-- ⏰ **Cron Job Manager** — The only agent UI with a full scheduler: create, edit, pause, trigger, and monitor jobs; run history inline
-- 🔐 **Permissions & Toolsets** — Configure approvals, command allowlist, toolsets, security scanner, code limits, and reasoning from Settings UI
-- 💾 **Session Persistence** — Auth tokens, sessions, and active runs survive server restarts via Redis (auto-connects, graceful fallback)
-
----
-
 ## 📸 Screenshots
 
-|                 Chat                 |                 Files                  |
+|                 Cron Job                |                 Files                  |
 | :----------------------------------: | :------------------------------------: |
-| ![Chat](./docs/screenshots/chat.png) | ![Files](./docs/screenshots/files.png) |
+| <img width="764" height="972" alt="image" src="https://github.com/user-attachments/assets/f13f35fd-0538-4515-9902-1cbe9fb99d71" />| ![Files](./docs/screenshots/files.png) |
 
 |                   Terminal                   |                  Memory                  |
 | :------------------------------------------: | :--------------------------------------: |
@@ -92,7 +90,7 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 
 |                  Skills                  |                   Settings                   |
 | :--------------------------------------: | :------------------------------------------: |
-| ![Skills](./docs/screenshots/skills.png) | ![Settings](./docs/screenshots/settings.png) |
+| ![Skills](./docs/screenshots/skills.png) | <img width="1048" height="1216" alt="image" src="https://github.com/user-attachments/assets/f62d3378-ad68-4516-81ff-eceb952d2e7d" /> |
 
 ---
 
