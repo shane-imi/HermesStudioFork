@@ -14,6 +14,7 @@ import {
   updateMemberStatus,
   deleteCrew,
 } from '../../../server/crew-store'
+import { deleteWorkflow } from '../../../server/workflow-store'
 
 export const Route = createFileRoute('/api/crews/$crewId')({
   server: {
@@ -86,6 +87,7 @@ export const Route = createFileRoute('/api/crews/$crewId')({
         if (!deleted) {
           return json({ ok: false, error: 'Crew not found' }, { status: 404 })
         }
+        deleteWorkflow(params.crewId)
         return json({ ok: true })
       },
     },

@@ -4,6 +4,78 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-12 — Session 8
+
+### What was done
+
+Three improvements across two tasks:
+
+**Task #12 fix — Knowledge Graph: dialog → split-pane**
+- The force-directed graph was buried inside a dialog triggered by a small "Graph view" button; most users never found it
+- Replaced the dialog with a **Pages / Graph toggle** in the Knowledge browser header — both views share the left file-tree column; the right pane switches between page content and the graph canvas
+- Graph data now fetched eagerly on mount (not lazy); clicking a graph node selects the page and auto-switches back to Pages view
+- Dialog imports removed; `GraphCanvas` SVG height changed from fixed `h-[540px]` to `h-full` to fill the pane
+
+**Task #13 — Crew/agent status dashboard (aggregate metrics)**
+- Added `StatsStrip` component at the top of the Crews list screen (above the crew grid)
+- Six stat chips: **Crews**, **Active** (green pulse when >0), **Paused**, **Complete**, **Agents**, **Running** (green pulse when >0)
+- `RecentActivityFeed` below: surfaces latest `lastActivity` snippets from members across all crews, sorted by recency, max 6 entries
+- Zero new API calls — all data derived from the `crews` query already polling every 10 s
+
+**Task #14 — Visual Workflow Builder (DAG editor)**
+
+Full implementation of a DAG-structured task pipeline editor as a new "Workflow" tab on every crew detail screen.
+
+**New files:**
+- `src/types/workflow.ts` — shared types: `WorkflowTask`, `WorkflowEdge`, `Workflow`
+- `src/server/workflow-store.ts` — file-backed persistence at `.runtime/workflows.json`, one workflow per crew; same in-memory + deferred disk write pattern as crew-store
+- `src/routes/api/crews/$crewId.workflow.ts` — GET / PUT / DELETE; PUT validates edge references and runs DFS cycle detection (400 on cycle)
+- `src/lib/workflow-api.ts` — client fetch helpers
+- `src/screens/crews/components/workflow-builder.tsx` — the canvas component + runner hook
+
+**Modified files:**
+- `src/screens/crews/crew-detail-screen.tsx` — added "Overview" / "Workflow" tab bar; Workflow tab renders `<WorkflowBuilder />`
+- `src/routes/api/crews/$crewId.ts` — crew DELETE now also calls `deleteWorkflow()` to keep storage clean
+
+**Canvas implementation (pure SVG, no new library deps):**
+- Nodes: `<rect>` (176 × 68 px, r=8) with status tint overlay, task label, assignee text, status badge, input/output port circles
+- Edges: cubic bezier `<path>` with SVG `<marker>` arrowhead; active edges highlight green; wide invisible hit path for click-to-delete
+- Pan: pointer capture on SVG background drag
+- Zoom: non-passive wheel listener (0.2×–4×) + toolbar +/−/⊙ buttons
+- Node drag: `data-tid` attribute hit-test + pointer capture, delta converted via viewBox ratio
+
+**Interactions:**
+- **Add Task** — toolbar button opens modal: label, prompt (textarea), assignee (crew member select)
+- **Connect mode** — toolbar toggle; click source node (highlights), click target node → creates directed edge; cycle check runs before adding; Esc cancels
+- **Auto Layout** — Kahn's BFS topological layers; nodes spread left-to-right in columns, vertically centred per layer
+- **Edit Task** — double-click node or "Edit Task" button in side panel; edit label/prompt/assignee
+- **Delete Task** — removes node and all its connected edges
+- **Delete Edge** — click edge (wide transparent hit area) or × button in side panel dependency list
+- **Save** — explicit "Save" button; only enabled when dirty; persists to `.runtime/workflows.json` via PUT
+- **Clear** — delete entire workflow with confirm()
+
+**Execution engine (client-side, no new server state):**
+- `topoLayers()` — Kahn's BFS producing `string[][]` where each inner array is a parallel execution layer
+- "Run Workflow" dispatches layer 0 in parallel via existing `dispatchTask()` API; tracks sessionKey→taskId in a `pendingRef` Map
+- Separate `EventSource('/api/chat-events')` opened while running; `run_end` / `done` events matched by sessionKey; on task completion the layer completion check fires
+- When all tasks in a layer complete, the next layer dispatches automatically
+- If any task errors: execution halts, error shown in toolbar, remaining layers skipped
+- Per-node visual status updates in real time: idle → running (green border) → done (indigo) / error (red)
+
+**TypeScript:** zero new errors (build passes clean; 4 pre-existing errors in unrelated files unchanged)
+
+### Repo state
+- Branch: `main`
+- Version: 1.8.0
+
+### Next session start
+- Task #15: Agent/crew templates — pre-built configurations (nice-to-have)
+- Task #16: Cost tracking per crew (nice-to-have)
+- Task #17: MCP client protocol support — connect to external MCP servers (critical)
+- Task #18: Audit trail — timeline of all agent/crew actions (critical)
+
+---
+
 ## 2026-04-12 — Session 7
 
 ### What was done

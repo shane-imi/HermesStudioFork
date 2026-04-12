@@ -9,9 +9,12 @@ import {
   Delete01Icon,
   MessageMultiple01Icon,
   PlayIcon,
+  Share01Icon,
   UserMultiple02Icon,
 } from '@hugeicons/core-free-icons'
 import { DispatchDialog } from './components/dispatch-dialog'
+import { WorkflowBuilder } from './components/workflow-builder'
+import { Tabs, TabsList, TabsTab, TabsPanel } from '@/components/ui/tabs'
 import type { Crew, CrewMember, CrewMemberStatus } from '@/lib/crews-api'
 import {
   deleteCrew,
@@ -162,6 +165,7 @@ export function CrewDetailScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
+  const [activeTab, setActiveTab] = useState<'overview' | 'workflow'>('overview')
   const [dispatchOpen, setDispatchOpen] = useState(false)
   const [activity, setActivity] = useState<ActivityEntry[]>([])
   const [liveMembers, setLiveMembers] = useState<
@@ -411,39 +415,67 @@ export function CrewDetailScreen() {
         </div>
       </div>
 
+      {/* Tab bar */}
+      <div className="border-b border-[var(--theme-border)] px-6">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <TabsList variant="underline">
+            <TabsTab value="overview">
+              <HugeiconsIcon icon={UserMultiple02Icon} size={13} strokeWidth={1.7} />
+              Overview
+            </TabsTab>
+            <TabsTab value="workflow">
+              <HugeiconsIcon icon={Share01Icon} size={13} strokeWidth={1.7} />
+              Workflow
+            </TabsTab>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Goal */}
-        {crew.goal && (
-          <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-4">
-            <p className="mb-1 text-xs font-medium text-[var(--theme-muted)]">
-              Goal
-            </p>
-            <p className="text-sm text-[var(--theme-text)]">{crew.goal}</p>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {activeTab === 'overview' && (
+          <div className="h-full overflow-y-auto space-y-6 p-6">
+            {/* Goal */}
+            {crew.goal && (
+              <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-4">
+                <p className="mb-1 text-xs font-medium text-[var(--theme-muted)]">
+                  Goal
+                </p>
+                <p className="text-sm text-[var(--theme-text)]">{crew.goal}</p>
+              </div>
+            )}
+
+            {/* Agent grid */}
+            <div>
+              <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--theme-muted)]">
+                Agents ({crew.members.length})
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {displayMembers.map((member) => (
+                  <MemberCard key={member.id} member={member} />
+                ))}
+              </div>
+            </div>
+
+            {/* Activity feed */}
+            <div>
+              <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--theme-muted)]">
+                Live Activity
+              </h2>
+              <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-4">
+                <ActivityFeed entries={activity} />
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Agent grid */}
-        <div>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--theme-muted)]">
-            Agents ({crew.members.length})
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {displayMembers.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </div>
-        </div>
-
-        {/* Activity feed */}
-        <div>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--theme-muted)]">
-            Live Activity
-          </h2>
-          <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-4">
-            <ActivityFeed entries={activity} />
-          </div>
-        </div>
+        {activeTab === 'workflow' && (
+          <WorkflowBuilder
+            crewId={crewId}
+            crew={crew}
+            displayMembers={displayMembers}
+          />
+        )}
       </div>
 
       {/* Dispatch dialog */}

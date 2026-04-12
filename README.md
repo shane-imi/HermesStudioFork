@@ -6,7 +6,7 @@
 
 **The only Hermes web UI with a built-in cron job manager — schedule, monitor, and control autonomous agent tasks without touching a terminal.**
 
-[![Version](https://img.shields.io/badge/version-1.7.0-6366F1.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.8.0-6366F1.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-6366F1.svg)](CONTRIBUTING.md)
@@ -31,6 +31,7 @@
 - ⏰ **Cron Job Manager** — The only agent UI with a full scheduler: create, edit, pause, trigger, and monitor jobs; manual triggers stream live tool events via SSE directly into the job card
 - 🔐 **Permissions & Toolsets** — Configure approvals, command allowlist, toolsets, security scanner, code limits, and reasoning from Settings UI
 - 💾 **Session Persistence** — Auth tokens, sessions, and active runs survive server restarts via Redis (auto-connects, graceful fallback)
+- 🔀 **Visual Workflow Builder** — Build and run DAG-structured task pipelines for your crews; tasks run in topological order with live per-node status
 
 ---
 
@@ -80,6 +81,7 @@ Hermes Studio is a fork of [hermes-workspace](https://github.com/outsourc-e/herm
 - ✅ **Multi-Agent Orchestration** — Crews: named groups of persona agents, parallel task dispatch, live SSE activity feed, per-member status tracking
 - ✅ **Profile-Scoped Workspaces** — each agent works inside an isolated directory (`~/.hermes/profiles/<name>/`) so crews don't collide on the file system
 - ✅ **Interactive Knowledge Graph** — force-directed canvas in the Memory screen: zoom, pan, drag nodes, hover to highlight connections, nodes sized by degree
+- ✅ **Visual Workflow Builder** — DAG editor for orchestrating sequential and parallel agent task pipelines; nodes, bezier edges, auto-layout, and live execution with SSE status updates per node
 
 ---
 
@@ -419,6 +421,21 @@ Coordinate multiple AI agents working in parallel toward a shared goal — all f
 - **Status indicators** — idle / running / done / error shown with animated pulse on each member card
 - **"Open chat"** link on every member card navigates directly to that agent's chat session
 - **Persistence** — crews and their member status survive server restarts (file-backed crew store)
+
+### 🔀 Visual Workflow Builder
+
+The Crew detail screen's **Workflow tab** is a full DAG editor for building and running structured task pipelines.
+
+- **SVG canvas** — pure-SVG rendering; no external graph library required; pan, zoom (0.2×–4×), and node drag with pointer capture
+- **Add tasks** — each task has a label, a full prompt sent to the agent, and an assignee (any crew member or "all agents")
+- **Draw dependencies** — activate Connect mode, click a source node then a target to draw a bezier edge with arrowhead; a dependency means the target task only runs after the source completes
+- **Cycle detection** — creating a cycle shows an immediate error and discards the edge; server-side validation also rejects cycles on save
+- **Auto Layout** — Kahn's BFS topological sort lays nodes out in parallel columns, left-to-right, with vertical centering per layer
+- **Persistent** — workflow is saved per crew in `.runtime/workflows.json` (file-backed, same pattern as the crew store)
+- **Run Workflow** — click Run to execute tasks in topological order: root tasks dispatch in parallel; each layer waits for all its tasks to complete (via SSE `run_end` events) before the next layer dispatches
+- **Live node status** — each node shows a colour-coded tinted border and badge: idle → running (green pulse) → done (indigo) → error (red); active edges also highlight in green
+- **Edge deletion** — click any edge (wide invisible hit area) to remove the dependency
+- **Task edit panel** — click a node to open a right-side panel showing full prompt, assignee, dependencies, live status; double-click to edit inline
 
 ### 🗂️ Profile-Scoped Workspaces
 
