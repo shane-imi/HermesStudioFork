@@ -13,6 +13,8 @@ import {
   deleteUserTemplate,
 } from '@/lib/templates-api'
 import type { CrewTemplate, CrewTemplateCategory } from '@/lib/templates-api'
+import { fetchAgents } from '@/lib/agents-api'
+import type { AgentDefinition } from '@/types/agent'
 import { AGENT_PERSONAS } from '@/lib/agent-personas'
 import { toast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
@@ -40,11 +42,13 @@ type Props = {
 
 function TemplateCard({
   template,
+  agents,
   onSelect,
   onDelete,
   isDeleting,
 }: {
   template: CrewTemplate
+  agents: AgentDefinition[]
   onSelect: () => void
   onDelete: () => void
   isDeleting: boolean
@@ -92,17 +96,18 @@ function TemplateCard({
       {/* Members */}
       <div className="mb-4 flex flex-wrap gap-1">
         {template.defaultMembers.map((m, i) => {
-          const persona = AGENT_PERSONAS.find(
-            (p) => p.name.toLowerCase() === m.persona,
-          )
+          const agent = agents.find((a) => a.name.toLowerCase() === m.persona)
+          const builtIn = AGENT_PERSONAS.find((p) => p.name.toLowerCase() === m.persona)
+          const emoji = agent?.emoji ?? builtIn?.emoji ?? '🤖'
+          const displayName = agent?.name ?? builtIn?.name ?? m.persona
           return (
             <span
               key={i}
-              title={`${persona?.name ?? m.persona} — ${m.role}`}
+              title={`${displayName} — ${m.role}`}
               className="flex items-center gap-1 rounded-full border border-[var(--theme-border)] bg-[var(--theme-card2)] px-2 py-0.5 text-[10px] text-[var(--theme-muted)]"
             >
-              <span>{persona?.emoji ?? '🤖'}</span>
-              <span>{persona?.name ?? m.persona}</span>
+              <span>{emoji}</span>
+              <span>{displayName}</span>
             </span>
           )
         })}
@@ -128,6 +133,13 @@ export function TemplatesGallery({ open, onOpenChange, onSelectTemplate }: Props
     queryKey: ['crew-templates'],
     queryFn: fetchTemplates,
     enabled: open,
+  })
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents'],
+    queryFn: fetchAgents,
+    enabled: open,
+    staleTime: 30_000,
   })
 
   const deleteMutation = useMutation({
@@ -228,6 +240,7 @@ export function TemplatesGallery({ open, onOpenChange, onSelectTemplate }: Props
                 <TemplateCard
                   key={template.id}
                   template={template}
+                  agents={agents}
                   onSelect={() => {
                     onOpenChange(false)
                     onSelectTemplate(template)

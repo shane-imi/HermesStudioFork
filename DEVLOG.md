@@ -4,6 +4,42 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-12 — Session 12
+
+### What was done
+
+**Custom Agent Creation & Template Modification**
+
+Users can now create their own agents with custom system prompts, identities, and model overrides — and have them automatically appear in the crew builder and template gallery.
+
+**New files:**
+- `src/types/agent.ts` — `AgentDefinition` interface: `id`, `name`, `emoji`, `color`, `roleLabel`, `systemPrompt`, `model`, `tags`, `isBuiltIn`, `createdAt`, `updatedAt`; plus `CreateAgentInput` and `UpdateAgentInput` types
+- `src/server/agent-definitions-store.ts` — file-backed CRUD store persisting to `.runtime/agent-definitions.json`; `getBuiltInAgents()` derives built-in entries from `AGENT_PERSONAS` with pre-written default system prompts; `listAgents()`, `getAgent()`, `createAgent()`, `updateAgent()`, `deleteAgent()`
+- `src/routes/api/agents/index.ts` — `GET /api/agents` (list), `POST /api/agents` (create); validates name ≤ 40 chars, color against whitelist
+- `src/routes/api/agents/$agentId.ts` — `GET`, `PATCH`, `DELETE`; returns 403 on attempts to mutate built-in agents
+- `src/lib/agents-api.ts` — client helpers: `fetchAgents()`, `fetchAgent()`, `createAgent()`, `updateAgent()`, `deleteAgent()`
+- `src/routes/agents.tsx` — page route at `/agents`
+- `src/screens/agents/agent-library-screen.tsx` — Agent Library UI: search, filter (All/Built-in/Custom), agent cards showing emoji, color, role, tags, system prompt preview; Create/Edit/Delete/Duplicate actions; Delete protected for built-ins; stat header (N built-in, N custom)
+- `src/screens/agents/agent-editor-dialog.tsx` — Create/Edit form: emoji picker grid (24 options), color picker swatch (16 colors), name, role label, system prompt textarea (monospace, resizable), model override, tags (comma-separated); supports both create and edit modes
+
+**Modified files:**
+- `src/routeTree.gen.ts` — registered `/agents`, `/api/agents/`, `/api/agents/$agentId` routes in all required TypeScript interfaces and route tree
+- `src/screens/chat/components/chat-sidebar.tsx` — added `AiUserIcon` import, `isAgentsActive` state, "Agents" nav item in the main nav group (below Crews)
+- `src/components/workspace-shell.tsx` — added `/agents` → `'Agents'` mobile page title mapping
+- `src/screens/crews/components/create-crew-dialog.tsx` — fetches full agent list via `useQuery(['agents'])`; persona picker renders Built-in/Custom `<optgroup>` sections when custom agents exist; `addMember()` uses `agentOptions` for next-persona selection; color swatch uses `agent.color`/`agent.emoji` from unified list
+- `src/screens/crews/components/templates-gallery.tsx` — fetches agents via `useQuery(['agents'])`; `TemplateCard` receives `agents` prop; member pills resolve emoji/name from full agent list (custom agents now display correctly)
+- `src/routes/api/crews/index.ts` — calls `listAgents()` when minting crew members; resolves emoji, displayName, roleLabel, and model from custom agent if found, falls back to built-in persona; crew member records are now agent-aware
+
+**Architecture notes:**
+- Built-in agents are derived at runtime from `AGENT_PERSONAS` and never written to disk
+- Custom agents use UUID IDs; built-in agent IDs follow `builtin-<name>` convention
+- `GET /api/agents` returns built-ins first (stable order by persona array), then custom sorted newest-first
+- The crew creation API is backwards-compatible: a crew member's `persona` field remains the lowercase name string; the API layer resolves display metadata from the full agent list at create time
+
+### Version bump: 1.11.0 → 1.12.0
+
+---
+
 ## 2026-04-12 — Session 11
 
 ### What was done

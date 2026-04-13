@@ -8,6 +8,7 @@ import { json } from '@tanstack/react-start'
 import { isAuthenticated } from '../../../server/auth-middleware'
 import { requireJsonContentType } from '../../../server/rate-limit'
 import { AGENT_PERSONAS } from '../../../lib/agent-personas'
+import { listAgents } from '../../../server/agent-definitions-store'
 import {
   createCrew,
   listCrews,
@@ -97,21 +98,32 @@ export const Route = createFileRoute('/api/crews/')({
           )
         }
 
+        // Load all agents (built-ins + custom) for lookup
+        const allAgents = listAgents()
+
         // Build members, minting sessions in parallel
         const members = await Promise.all(
           (rawMembers as Array<Record<string, unknown>>).map(async (m) => {
             const personaName =
               typeof m.persona === 'string' ? m.persona.toLowerCase() : 'kai'
-            const personaDef =
-              AGENT_PERSONAS.find(
-                (p) => p.name.toLowerCase() === personaName,
-              ) ?? AGENT_PERSONAS[6] // Kai fallback
+
+            // Try custom/built-in agent lookup first, fall back to persona
+            const agentDef = allAgents.find(
+              (a) => a.name.toLowerCase() === personaName,
+            )
+            const builtInFallback = AGENT_PERSONAS[6] // Kai fallback
+            const displayEmoji = agentDef?.emoji ?? builtInFallback.emoji
+            const displayName = agentDef?.name ?? builtInFallback.name
+            const roleLabel = agentDef?.roleLabel ?? builtInFallback.role
+            const color = agentDef?.color ?? builtInFallback.color
+
             const model =
-              typeof m.model === 'string' && m.model ? m.model : null
+              agentDef?.model ??
+              (typeof m.model === 'string' && m.model ? m.model : null)
             const role =
               typeof m.role === 'string' ? m.role : 'executor'
 
-            const sessionKey = await mintSession(personaDef.name.toLowerCase(), model)
+            const sessionKey = await mintSession(displayName.toLowerCase(), model)
             const profileName =
               typeof m.profileName === 'string' && m.profileName
                 ? m.profileName
@@ -120,10 +132,10 @@ export const Route = createFileRoute('/api/crews/')({
             return {
               sessionKey,
               role: role as import('../../../server/crew-store').CrewMemberRole,
-              persona: personaDef.name.toLowerCase(),
-              displayName: `${personaDef.emoji} ${personaDef.name}`,
-              roleLabel: personaDef.role,
-              color: personaDef.color,
+              persona: personaName,
+              displayName: `${displayEmoji} ${displayName}`,
+              roleLabel,
+              color,
               model,
               profileName,
             }
