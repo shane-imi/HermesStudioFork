@@ -675,11 +675,24 @@ The Docker setup uses `hermes --gateway` automatically — no action needed if u
 | Multi-Agent Orchestration (Crews)    | ✅ Shipped v1.6.0 |
 | Profile-Scoped Workspaces            | ✅ Shipped v1.6.0 |
 | Interactive Knowledge Graph          | ✅ Shipped v1.6.0 |
-| Crew/Agent Metrics Dashboard         | 🔜 Planned        |
-| Visual Workflow Builder (DAG editor) | 🔜 Planned        |
-| Crew Templates                       | 🔜 Planned        |
-| MCP Client Protocol                  | 🔜 Planned        |
+| Crew/Agent Metrics Dashboard         | ✅ Shipped v1.7.0 |
+| Visual Workflow Builder (DAG editor) | ✅ Shipped v1.8.0 |
+| Crew Templates                       | ✅ Shipped v1.9.0 |
+| Cost Tracking per Crew               | ✅ Shipped v1.10.0 |
+| MCP Client Protocol                  | ✅ Shipped v1.11.0 |
+| Agent Library (custom agents)        | ✅ Shipped v1.12.0 |
 | Audit Trail                          | 🔜 Planned        |
+| Test Suite + CI Badges               | 🔜 Planned        |
+| System Health Panel                  | 🔜 Planned        |
+| Clone Crew                           | 🔜 Planned        |
+| Setup Wizard                         | 🔜 Planned        |
+| Systemd Auto-start                   | 🔜 Planned        |
+| State.db Analytics                   | 🔜 Planned        |
+| Command Palette (Ctrl+K)             | 🔜 Planned        |
+| Identity File Editor                 | 🔜 Planned        |
+| Patterns & Corrections Viewer        | 🔜 Planned        |
+| Token Usage Time-Series Chart        | 🔜 Planned        |
+| Session History Archive              | 🔜 Planned        |
 | Native Desktop App (Electron)        | 🔨 In Development |
 | Cloud / Hosted Version               | 🔜 Coming Soon    |
 

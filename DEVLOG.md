@@ -4,6 +4,43 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-13 — Session 13
+
+### What was done
+
+**Competitive research + roadmap expansion**
+
+Researched all known public Hermes Agent web UI repositories to identify unique selling points and improvement opportunities. Repos reviewed:
+
+- [nesquena/hermes-webui](https://github.com/nesquena/hermes-webui) — Vanilla JS, no build step, mobile-first, zero framework
+- [Euraika-Labs/hermesagentwebui](https://github.com/Euraika-Labs/hermesagentwebui) — Full CI: lint + unit (vitest) + Playwright e2e, RC quality release, audit trails
+- [Euraika-Labs/pan-ui](https://github.com/Euraika-Labs/pan-ui) — Setup wizard, systemd user service installer, extension system
+- [joeynyc/hermes-hudui](https://github.com/joeynyc/hermes-hudui) — 13-tab consciousness monitor, WebSocket live updates, command palette, Patterns & Corrections tabs
+- [xaspx/hermes-control-interface](https://github.com/xaspx/hermes-control-interface) — System metrics (CPU/RAM/disk), agent clone/create, maintenance tools panel, 7-day token chart
+- [sanchomuzax/hermes-webui](https://github.com/sanchomuzax/hermes-webui) — Reads state.db directly for richer analytics; message-level conversation history inspector
+- [Daniel-Parke/hermes-mission-control](https://github.com/Daniel-Parke/hermes-mission-control) — Agent personality file editor (USER.md, MEMORY.md, AGENT.md)
+- [karmsheel/mission-control-hermes](https://github.com/karmsheel/mission-control-hermes) — Hackathon: task tracking, content pipelines, agent clone
+
+**Added 11 new planned tasks (#19–#29) to the backlog with attribution notes:**
+
+| Task | Attribution |
+|------|-------------|
+| #19 Test suite + CI badges | Inspired by Euraika-Labs/hermesagentwebui |
+| #20 System health panel | Inspired by xaspx/hermes-control-interface |
+| #21 Clone crew | Inspired by xaspx/hermes-control-interface + karmsheel/mission-control-hermes |
+| #22 Setup wizard | Inspired by Euraika-Labs/pan-ui |
+| #23 Systemd auto-start | Inspired by Euraika-Labs/pan-ui |
+| #24 State.db analytics | Inspired by sanchomuzax/hermes-webui |
+| #25 Command palette (Ctrl+K) | Inspired by joeynyc/hermes-hudui |
+| #26 Identity file editor | Inspired by Daniel-Parke/hermes-mission-control |
+| #27 Patterns & corrections viewer | Directly inspired by joeynyc/hermes-hudui |
+| #28 Token usage time-series chart | Inspired by xaspx/hermes-control-interface; extended with 7d/30d/90d/1y/custom ranges |
+| #29 Session history archive | Inspired by sanchomuzax/hermes-webui |
+
+**Updated README roadmap** — corrected shipped versions (v1.7.0–v1.12.0) and added all 11 planned items.
+
+---
+
 ## 2026-04-12 — Session 12
 
 ### What was done
