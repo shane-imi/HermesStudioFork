@@ -4,6 +4,37 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-13 — Session 16
+
+### What was done
+
+**Task #19 — Test Suite with visible badges (vitest unit tests + Playwright e2e + CI badges)**
+
+**Unit tests (vitest):**
+
+- `vitest.config.ts` — standalone vitest config (separate from `vite.config.ts` to avoid TanStack Start plugin conflicts); `node` environment; `@` alias pointing to `src/`; includes `src/test/**/*.test.ts`
+- `src/test/utils.test.ts` — 6 tests for `cn()` (empty args, joins, falsy filtering, Tailwind conflict resolution, clsx object/array syntax)
+- `src/test/crew-store.test.ts` — 9 tests for `crew-store`; uses `vi.spyOn(process, 'cwd').mockReturnValue(tmpDir)` + `vi.resetModules()` + dynamic import pattern to isolate module-level `DATA_DIR` per test; covers list, create, update, delete, getCrew, trim, ordering, member assignment
+- `src/test/event-store.test.ts` — 8 tests for `event-store`; same temp-dir isolation pattern; covers appendEvent sequence numbers, getEventsSince, queryAuditEvents (all, by sessionKey, by eventTypes, session list)
+- All 23 tests pass locally
+
+**E2E tests (Playwright):**
+
+- `playwright.config.ts` — `webServer` starts `node server-entry.js` on port 3000; reuses existing server outside CI; chromium only; retries on CI
+- `tests/e2e/smoke.spec.ts` — 6 smoke tests: homepage loads, `/api/auth-check` returns JSON, `/api/ping` responds (200 or 503 — gateway may be offline in CI), chat/crews/audit pages render without React error boundary
+
+**CI (GitHub Actions):**
+
+- `.github/workflows/ci.yml` — rewrote from pnpm to npm; two jobs: `unit-tests` (runs `npm test`) and `e2e-tests` (builds, installs Playwright browsers, runs `npx playwright test`); e2e job requires unit-tests to pass first; uploads `playwright-report/` artifact on failure
+- `package.json` — added `"test:e2e": "playwright test"` script
+
+**Badge & version:**
+
+- README — added `[![CI](…badge.svg)](…ci.yml)` badge; `🧪 Test Suite` feature bullet; version bump in badge
+- Version: 1.14.0 → 1.15.0
+
+---
+
 ## 2026-04-13 — Session 15
 
 ### What was done

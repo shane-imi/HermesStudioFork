@@ -6,9 +6,10 @@
 
 **The only Hermes web UI with a built-in cron job manager — schedule, monitor, and control autonomous agent tasks without touching a terminal.**
 
-[![Version](https://img.shields.io/badge/version-1.14.0-6366F1.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.15.0-6366F1.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
+[![CI](https://github.com/JPeetz/Hermes-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/JPeetz/Hermes-Studio/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-6366F1.svg)](CONTRIBUTING.md)
 
 > Not a chat wrapper. A complete studio — orchestrate multi-agent crews, approve actions, browse memory with a visual knowledge graph, manage skills, and schedule recurring tasks, all from one interface. Built for power users running Hermes Agent locally.
@@ -38,6 +39,7 @@
 - 🧬 **Agent Library** — create, edit, and delete custom agents with bespoke system prompts, emoji, role labels, and model overrides; built-in agents include pre-written system prompts you can copy and customize; custom agents appear in the crew builder and template picker alongside built-in personas
 - 🕵️ **Audit Trail** — chronological timeline of every tool call, user message, and approval request across all sessions; filter by session, event type, and date range; expand tool events to inspect full args and results
 - 📋 **Clone Crew** — duplicate any existing crew in one click; mints fresh sessions for every member and opens the new crew immediately; available on the crew card (hover) and from the crew detail header
+- 🧪 **Test Suite** — vitest unit tests for core stores and utilities (23 tests, all passing); Playwright e2e smoke tests for all major pages; GitHub Actions CI with visible status badge
 
 ---
 
