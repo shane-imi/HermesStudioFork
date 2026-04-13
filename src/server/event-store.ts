@@ -186,6 +186,95 @@ export function getEventsSince(
   }
 }
 
+export interface AuditQuery {
+  sessionKey?: string
+  eventTypes?: string[]
+  since?: number
+  until?: number
+  limit?: number
+  offset?: number
+}
+
+export interface AuditResult {
+  events: StoredEvent[]
+  total: number
+  sessions: string[]
+}
+
+/**
+ * Return events across all (or a specific) session(s) for the audit trail.
+ * Filters to meaningful action events by default (tool, user_message, approval).
+ */
+export function queryAuditEvents(query: AuditQuery = {}): AuditResult {
+  const db = getDb()
+  if (!db) return { events: [], total: 0, sessions: [] }
+
+  const {
+    sessionKey,
+    eventTypes,
+    since,
+    until,
+    limit = 100,
+    offset = 0,
+  } = query
+
+  try {
+    const conditions: string[] = []
+    const params: (string | number)[] = []
+
+    if (sessionKey) {
+      conditions.push('session_key = ?')
+      params.push(sessionKey)
+    }
+    if (eventTypes && eventTypes.length > 0) {
+      conditions.push(`event_type IN (${eventTypes.map(() => '?').join(',')})`)
+      params.push(...eventTypes)
+    }
+    if (since !== undefined) {
+      conditions.push('ts >= ?')
+      params.push(since)
+    }
+    if (until !== undefined) {
+      conditions.push('ts <= ?')
+      params.push(until)
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    const totalRow = db
+      .prepare(`SELECT COUNT(*) AS c FROM events ${where}`)
+      .get(...params) as { c: number }
+
+    const rows = db
+      .prepare(
+        `SELECT seq, session_key, run_id, event_type, payload, ts
+         FROM events ${where}
+         ORDER BY seq DESC
+         LIMIT ? OFFSET ?`,
+      )
+      .all(...params, limit, offset) as EventRow[]
+
+    const sessionRows = db
+      .prepare('SELECT DISTINCT session_key FROM events ORDER BY session_key ASC')
+      .all() as Array<{ session_key: string }>
+
+    return {
+      events: rows.map((row) => ({
+        seq: row.seq,
+        sessionKey: row.session_key,
+        runId: row.run_id,
+        eventType: row.event_type,
+        payload: JSON.parse(row.payload) as Record<string, unknown>,
+        ts: row.ts,
+      })),
+      total: totalRow.c,
+      sessions: sessionRows.map((r) => r.session_key),
+    }
+  } catch {
+    return { events: [], total: 0, sessions: [] }
+  }
+}
+
 /**
  * Return the highest stored sequence number for a session.
  * Useful for clients to detect drift without opening an SSE stream.

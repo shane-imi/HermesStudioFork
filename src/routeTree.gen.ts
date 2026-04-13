@@ -17,6 +17,7 @@ import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
@@ -56,6 +57,7 @@ import { Route as ApiChatEventsRouteImport } from './routes/api/chat-events'
 import { Route as ApiAuthCheckRouteImport } from './routes/api/auth-check'
 import { Route as ApiAuthRouteImport } from './routes/api/auth'
 import { Route as ApiCrewsIndexRouteImport } from './routes/api/crews/index'
+import { Route as ApiAuditIndexRouteImport } from './routes/api/audit/index'
 import { Route as ApiAgentsIndexRouteImport } from './routes/api/agents/index'
 import { Route as ApiSkillsUninstallRouteImport } from './routes/api/skills/uninstall'
 import { Route as ApiSkillsSettingsRouteImport } from './routes/api/skills/settings'
@@ -134,6 +136,11 @@ const FilesRoute = FilesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsRoute = AgentsRouteImport.update({
@@ -329,6 +336,11 @@ const ApiAuthRoute = ApiAuthRouteImport.update({
 const ApiCrewsIndexRoute = ApiCrewsIndexRouteImport.update({
   id: '/api/crews/',
   path: '/api/crews/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuditIndexRoute = ApiAuditIndexRouteImport.update({
+  id: '/api/audit/',
+  path: '/api/audit/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAgentsIndexRoute = ApiAgentsIndexRouteImport.update({
@@ -536,6 +548,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/agents': typeof AgentsRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/files': typeof FilesRoute
   '/jobs': typeof JobsRoute
@@ -608,6 +621,7 @@ export interface FileRoutesByFullPath {
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
   '/api/agents/': typeof ApiAgentsIndexRoute
+  '/api/audit/': typeof ApiAuditIndexRoute
   '/api/crews/': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
@@ -624,6 +638,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/agents': typeof AgentsRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/files': typeof FilesRoute
   '/jobs': typeof JobsRoute
@@ -695,6 +710,7 @@ export interface FileRoutesByTo {
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
   '/api/agents': typeof ApiAgentsIndexRoute
+  '/api/audit': typeof ApiAuditIndexRoute
   '/api/crews': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
@@ -712,6 +728,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/agents': typeof AgentsRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/files': typeof FilesRoute
   '/jobs': typeof JobsRoute
@@ -784,6 +801,7 @@ export interface FileRoutesById {
   '/api/skills/settings': typeof ApiSkillsSettingsRoute
   '/api/skills/uninstall': typeof ApiSkillsUninstallRoute
   '/api/agents/': typeof ApiAgentsIndexRoute
+  '/api/audit/': typeof ApiAuditIndexRoute
   '/api/crews/': typeof ApiCrewsIndexRoute
   '/api/approvals/$approvalId/approve': typeof ApiApprovalsApprovalIdApproveRoute
   '/api/approvals/$approvalId/deny': typeof ApiApprovalsApprovalIdDenyRoute
@@ -802,6 +820,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/agents'
+    | '/audit'
     | '/dashboard'
     | '/files'
     | '/jobs'
@@ -874,6 +893,7 @@ export interface FileRouteTypes {
     | '/api/skills/settings'
     | '/api/skills/uninstall'
     | '/api/agents/'
+    | '/api/audit/'
     | '/api/crews/'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
@@ -890,6 +910,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/agents'
+    | '/audit'
     | '/dashboard'
     | '/files'
     | '/jobs'
@@ -961,6 +982,7 @@ export interface FileRouteTypes {
     | '/api/skills/settings'
     | '/api/skills/uninstall'
     | '/api/agents'
+    | '/api/audit'
     | '/api/crews'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
@@ -977,6 +999,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/agents'
+    | '/audit'
     | '/dashboard'
     | '/files'
     | '/jobs'
@@ -1049,6 +1072,7 @@ export interface FileRouteTypes {
     | '/api/skills/settings'
     | '/api/skills/uninstall'
     | '/api/agents/'
+    | '/api/audit/'
     | '/api/crews/'
     | '/api/approvals/$approvalId/approve'
     | '/api/approvals/$approvalId/deny'
@@ -1066,6 +1090,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   AgentsRoute: typeof AgentsRoute
+  AuditRoute: typeof AuditRoute
   DashboardRoute: typeof DashboardRoute
   FilesRoute: typeof FilesRoute
   JobsRoute: typeof JobsRoute
@@ -1124,6 +1149,7 @@ export interface RootRouteChildren {
   ApiProfilesReadRoute: typeof ApiProfilesReadRoute
   ApiProfilesRenameRoute: typeof ApiProfilesRenameRoute
   ApiAgentsIndexRoute: typeof ApiAgentsIndexRoute
+  ApiAuditIndexRoute: typeof ApiAuditIndexRoute
   ApiCrewsIndexRoute: typeof ApiCrewsIndexRoute
   ApiApprovalsApprovalIdApproveRoute: typeof ApiApprovalsApprovalIdApproveRoute
   ApiApprovalsApprovalIdDenyRoute: typeof ApiApprovalsApprovalIdDenyRoute
@@ -1187,6 +1213,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents': {
@@ -1460,6 +1493,13 @@ declare module '@tanstack/react-router' {
       path: '/api/crews'
       fullPath: '/api/crews/'
       preLoaderRoute: typeof ApiCrewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/audit/': {
+      id: '/api/audit/'
+      path: '/api/audit'
+      fullPath: '/api/audit/'
+      preLoaderRoute: typeof ApiAuditIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agents/': {
@@ -1862,6 +1902,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   AgentsRoute: AgentsRoute,
+  AuditRoute: AuditRoute,
   DashboardRoute: DashboardRoute,
   FilesRoute: FilesRoute,
   JobsRoute: JobsRoute,
@@ -1920,6 +1961,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProfilesReadRoute: ApiProfilesReadRoute,
   ApiProfilesRenameRoute: ApiProfilesRenameRoute,
   ApiAgentsIndexRoute: ApiAgentsIndexRoute,
+  ApiAuditIndexRoute: ApiAuditIndexRoute,
   ApiCrewsIndexRoute: ApiCrewsIndexRoute,
   ApiApprovalsApprovalIdApproveRoute: ApiApprovalsApprovalIdApproveRoute,
   ApiApprovalsApprovalIdDenyRoute: ApiApprovalsApprovalIdDenyRoute,

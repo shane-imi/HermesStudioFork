@@ -19,6 +19,7 @@ import {
   UserGroupIcon,
   UserMultiple02Icon,
   AiUserIcon,
+  TimelineIcon,
 } from '@hugeicons/core-free-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
@@ -565,6 +566,7 @@ function ChatSidebarComponent({
   const isMemoryActive = pathname === '/memory'
   const isCrewsActive = pathname === '/crews' || pathname.startsWith('/crews/')
   const isAgentsActive = pathname === '/agents'
+  const isAuditActive = pathname === '/audit'
   const mainRoutes = ['/chat', '/new', '/files', '/terminal']
   const knowledgeRoutes = ['/memory', '/skills']
   const systemRoutes = ['/settings', '/logs']
@@ -816,6 +818,13 @@ function ChatSidebarComponent({
       icon: AiUserIcon,
       label: 'Agents',
       active: isAgentsActive,
+    },
+    {
+      kind: 'link',
+      to: '/audit',
+      icon: TimelineIcon,
+      label: 'Audit Trail',
+      active: isAuditActive,
     },
   ]
 

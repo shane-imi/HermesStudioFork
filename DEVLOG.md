@@ -4,6 +4,39 @@ Running log of development sessions. Most recent at top.
 
 ---
 
+## 2026-04-13 — Session 14
+
+### What was done
+
+**Task #18 — Audit Trail (timeline of all agent/tool actions)**
+
+New cross-session audit timeline accessible at `/audit` via the sidebar.
+
+**Server-side additions:**
+
+- `src/server/event-store.ts` — added `queryAuditEvents()`: flexible cross-session query over the SQLite events database; supports filtering by session key, event types, date range, and pagination; also returns the full list of distinct session keys for the session picker
+- `src/routes/api/audit/index.ts` — new `GET /api/audit/` endpoint; defaults to querying `tool`, `user_message`, and `approval` events; supports `sessionKey`, `types`, `since`, `until`, `limit`, `offset` query params; max 500 results per request
+
+**Client-side additions:**
+
+- `src/screens/audit/audit-trail-screen.tsx` — full audit trail UI:
+  - Chronological (newest-first) timeline of events, auto-refreshes every 15 seconds
+  - Session filter dropdown populated from all known sessions
+  - Event type toggles: Tool Call, User Message, Approval
+  - Date range presets: Last hour, Last 6h, Last 24h, Last 7d, All time
+  - Tool event cards show phase badge (start/calling/complete/error) with colour coding; click to expand inline and inspect full args + result (syntax highlighted in monospace, truncated at 2000 chars)
+  - User message cards show the message text preview
+  - Approval cards show tool name and status with amber accent
+  - 50-event pages with Previous/Next pagination and count display
+- `src/routes/audit.tsx` — TanStack Start route file for `/audit`
+- `src/routeTree.gen.ts` — manually registered `AuditRoute` and `ApiAuditIndexRoute` across all required interface locations (FileRoutesByFullPath, FileRoutesByTo, FileRoutesById, FileRouteTypes full/to/id unions, RootRouteChildren, rootRouteChildren object, FileRoutesByPath declare module)
+- `src/screens/chat/components/chat-sidebar.tsx` — added `TimelineIcon` import and Audit Trail nav item after Agents
+- `src/components/workspace-shell.tsx` — added `/audit` → `'Audit Trail'` mobile page title
+
+**Version:** 1.12.0 → 1.13.0
+
+---
+
 ## 2026-04-13 — Session 13
 
 ### What was done
