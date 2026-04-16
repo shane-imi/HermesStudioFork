@@ -411,7 +411,7 @@ export function WorkspaceShell() {
       <MobileHamburgerMenu />
       {/* System metrics footer removed */}
       <CommandPalette pathname={pathname} sessions={sessions} />
-      <HermesOnboarding />
+      {authState.checked && (!authState.authRequired || authState.authenticated) && <HermesOnboarding />}
     </>
   )
 }
