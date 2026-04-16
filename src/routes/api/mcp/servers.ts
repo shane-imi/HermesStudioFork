@@ -13,7 +13,6 @@ import {
 } from '../../../server/gateway-capabilities'
 import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
 
-type AuthResult = Response | true
 
 // ─── Local config file I/O (mirrors hermes-config.ts) ────────────────────────
 
@@ -143,8 +142,9 @@ export const Route = createFileRoute('/api/mcp/servers')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const authResult = isAuthenticated(request) as AuthResult
-        if (authResult !== true) return authResult
+        if (!isAuthenticated(request)) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
 
         await ensureGatewayProbed()
         if (!getCapabilities().config) {
@@ -182,8 +182,9 @@ export const Route = createFileRoute('/api/mcp/servers')({
       },
 
       PUT: async ({ request }) => {
-        const authResult = isAuthenticated(request) as AuthResult
-        if (authResult !== true) return authResult
+        if (!isAuthenticated(request)) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         const csrfCheck = requireJsonContentType(request)
         if (csrfCheck) return csrfCheck
 

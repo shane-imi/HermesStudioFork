@@ -10,7 +10,6 @@ import YAML from 'yaml'
 import { isAuthenticated } from '../../server/auth-middleware'
 import { ensureGatewayProbed } from '../../server/gateway-capabilities'
 
-type AuthResult = Response | true
 
 const HERMES_HOME = path.join(os.homedir(), '.hermes')
 const CONFIG_PATH = path.join(HERMES_HOME, 'config.yaml')
@@ -159,8 +158,9 @@ export const Route = createFileRoute('/api/hermes-config')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const authResult = isAuthenticated(request) as AuthResult
-        if (authResult !== true) return authResult
+        if (!isAuthenticated(request)) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         await ensureGatewayProbed()
         const config = readConfig()
         const env = readEnv()
@@ -217,8 +217,9 @@ export const Route = createFileRoute('/api/hermes-config')({
       },
 
       PATCH: async ({ request }) => {
-        const authResult = isAuthenticated(request) as AuthResult
-        if (authResult !== true) return authResult
+        if (!isAuthenticated(request)) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         await ensureGatewayProbed()
         const body = (await request.json()) as Record<string, unknown>
 
